@@ -1,4 +1,6 @@
 import { readFileSync } from 'fs';
+import { GQLRootOperation } from './types';
+import { QUERY_OP_PATTERN, MUTATION_OP_PATTERN, SUBSCRIPTION_OP_PATTERN } from './constants';
 
 const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
   try{
@@ -13,8 +15,10 @@ const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
   }
 }
 
-const generateTypeDefinitionObjects = (typeDefinitionStrings: string[]) => {
-  
+const getRootOperationDefinitionStrings = (typeDefinitionStrings: string[]): string[] => {
+  const rootOpPattern = new RegExp(`${QUERY_OP_PATTERN}|${MUTATION_OP_PATTERN}|${SUBSCRIPTION_OP_PATTERN}`,'i');         //|\\b${ROOT_OP_NAMES.MUTATION}\\b(?=\s{|\{)|\\b${ROOT_OP_NAMES.SUBSCRIPTION}\\b(?=\s{|\{)`,'i');
+  const rootOperationTypeDefinitions = typeDefinitionStrings.filter( typeDefinition => rootOpPattern.test(typeDefinition));
+  return rootOperationTypeDefinitions;
 }
 
-console.log(generateTypeDefinitionStrings("./mockup.schema.graphql"));
+
