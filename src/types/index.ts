@@ -7,7 +7,7 @@ export enum ROOT_OP_NAMES {
 export enum GQL_NAMED_TYPES {
   SCALAR = "SCALAR",
   ENUM = "ENUM",
-  OBJECT = "OBJECT",
+  OBJECT_TYPE = "TYPE",
   INPUT = "INPUT",
   INTERFACE = "INTERFACE",
   UNION = "UNION"
@@ -28,6 +28,18 @@ export enum GQL_OUTPUT_TYPES {
 export enum GQL_WRAPPER_TYPES {
   LIST = "LIST",
   NON_NULL = "NON_NULL"
+}
+
+export interface GQLRootOperationTupleMap {
+  [ROOT_OP_NAMES.QUERY]: string[] | undefined;
+  [ROOT_OP_NAMES.MUTATION]: string[] | undefined;
+  [ROOT_OP_NAMES.SUBSCRIPTION]: string[] | undefined;
+}
+
+export interface GQLRootOperationMap {
+  [ROOT_OP_NAMES.QUERY]: GQLRootOperation | undefined;
+  [ROOT_OP_NAMES.MUTATION]: GQLRootOperation | undefined;
+  [ROOT_OP_NAMES.SUBSCRIPTION]: GQLRootOperation | undefined;
 }
 
 export interface GQLRootOperation {
