@@ -12,7 +12,8 @@ const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
     })
     const defGenPattern = new RegExp(DEF_GEN_PATTERN,'i');
     const typeDefinitionList = schemaFileData.split(defGenPattern);
-    const cleanedDefinitionList = typeDefinitionList.map( typeDefinition => typeDefinition.trim().replace(/\n/g, DELIM));
+    const emptyDefPattern = new RegExp(EMPTY_STRING_PATTERN);
+    const cleanedDefinitionList = typeDefinitionList.map( typeDefinition => typeDefinition.trim().replace(/\n/g, DELIM)).filter( typeDef => !emptyDefPattern.test(typeDef));
     return cleanedDefinitionList;
   }catch(err){
     throw new Error("Failed to generate type definition strings!");
