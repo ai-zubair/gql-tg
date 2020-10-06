@@ -38,7 +38,7 @@ const generateRootOperationDefTuples = (rootOperationDefinitionStrings: string[]
   }
   characterCleanedRootDefintions.forEach( rootDefString => {
     let rootDefTuple = rootDefString.split(DELIM);
-    const rootOpName = rootDefTuple[0].toUpperCase();
+    const rootOpName = rootDefTuple.shift().toUpperCase();
     const emptyAttributePattern = new RegExp(EMPTY_STRING_PATTERN);
     rootDefTuple = rootDefTuple.filter( attributes => !emptyAttributePattern.test(attributes) );
     defTupleMap[rootOpName] = rootDefTuple;
