@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, ROOT_OP_NAMES } from './types';
-import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN } from './constants';
+import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest } from './types';
+import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SIGNATURE_SPLIT_PATTERN } from './constants';
 
 const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
   if(!schemaURL.endsWith('.graphql')){
@@ -41,20 +41,37 @@ const generateRootOperationDefTuples = (rootOperationDefinitionStrings: string[]
     let rootDefTuple = rootDefString.split(DELIM);
     const rootOpName = rootDefTuple.shift().toUpperCase();
     const emptyAttributePattern = new RegExp(EMPTY_STRING_PATTERN);
-    rootDefTuple = rootDefTuple.filter( attributes => !emptyAttributePattern.test(attributes) );
+    rootDefTuple = rootDefTuple.filter( execRequest => !emptyAttributePattern.test(execRequest) );
     defTupleMap[rootOpName] = rootDefTuple;
   })
   return defTupleMap;
 }
 
-const generateRootOperationTypeDefinitions = (rootOpDetails: GQLRootOperationTupleMap): GQLRootOperationMap => {
+const generateExecRequest = (execRequestTuple: string[]): GQLExecutionRequest => {
+  console.log(execRequestTuple);
+}
 
-  return {
-    [ROOT_OP_NAMES.QUERY]: undefined,
-    [ROOT_OP_NAMES.MUTATION]: undefined,
-    [ROOT_OP_NAMES.SUBSCRIPTION]: undefined,
+const generateRootOperationTypeDefinitions = (rootOpTupleMap: GQLRootOperationTupleMap): GQLRootOperationMap => {
+  const operationMap: GQLRootOperationMap = {
+    [ROOT_OP_NAMES.QUERY]: rootOpTupleMap[ROOT_OP_NAMES.QUERY] ? {} as GQLRootOperation : undefined,
+    [ROOT_OP_NAMES.MUTATION]: rootOpTupleMap[ROOT_OP_NAMES.MUTATION] ? {} as GQLRootOperation : undefined,
+    [ROOT_OP_NAMES.SUBSCRIPTION]: rootOpTupleMap[ROOT_OP_NAMES.SUBSCRIPTION] ? {} as GQLRootOperation : undefined,
   }
+  for (const rootOpName in rootOpTupleMap) {
+    const rootOpTuple = rootOpTupleMap[rootOpName];
+    if(rootOpTuple){
+      operationMap[rootOpName].rootOperationName = rootOpName as ROOT_OP_NAMES;
+      operationMap[rootOpName].permittedRequests = [];
+      for(const executionRequestSignature of rootOpTuple){
+        const execReqSignatureSeparatorPattern = new RegExp(ER_SIGNATURE_SPLIT_PATTERN);
+        const execRequestSignatureTuple = executionRequestSignature.split(execReqSignatureSeparatorPattern)
+        const execRequest = generateExecRequest(execRequestSignatureTuple);
+        operationMap[rootOpName].permittedRequests.push(execRequest);
+      }
+    }
+  }
+  return operationMap;
   
 }
 
-console.log(generateRootOperationDefTuples(getRootOperationDefinitionStrings(generateTypeDefinitionStrings('./mockup.schema.graphql'))));
+generateRootOperationTypeDefinitions(generateRootOperationDefTuples(getRootOperationDefinitionStrings(generateTypeDefinitionStrings('./mockup.schema.graphql'))));

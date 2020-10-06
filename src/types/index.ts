@@ -34,12 +34,14 @@ export interface GQLRootOperationTupleMap {
   [ROOT_OP_NAMES.QUERY]: string[] | undefined;
   [ROOT_OP_NAMES.MUTATION]: string[] | undefined;
   [ROOT_OP_NAMES.SUBSCRIPTION]: string[] | undefined;
+  [key: string]: string[] | undefined;
 }
 
 export interface GQLRootOperationMap {
-  [ROOT_OP_NAMES.QUERY]: GQLRootOperation | undefined;
+  [ROOT_OP_NAMES.QUERY]: GQLRootOperation |  undefined;
   [ROOT_OP_NAMES.MUTATION]: GQLRootOperation | undefined;
   [ROOT_OP_NAMES.SUBSCRIPTION]: GQLRootOperation | undefined;
+  [key: string]: GQLRootOperation | undefined;
 }
 
 export interface GQLRootOperation {
