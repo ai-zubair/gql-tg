@@ -17,3 +17,7 @@ export const EMPTY_STRING_PATTERN = `^$`;
 export const ER_SPLIT_PATTERN = `(?<=\\)|^\\w+):`;
 
 export const SIGNATURE_SPLIT_PATTERN = `\\(|,|\\)`;
+
+export const ARG_SPLIT_PATTERN = `:`;
+
+export const REQUIRED_ARG_PATTERN = `!$`;
