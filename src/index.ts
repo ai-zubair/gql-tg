@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest } from './types';
-import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SIGNATURE_SPLIT_PATTERN } from './constants';
+import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg } from './types';
+import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN } from './constants';
 
 const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
   if(!schemaURL.endsWith('.graphql')){
@@ -47,8 +47,34 @@ const generateRootOperationDefTuples = (rootOperationDefinitionStrings: string[]
   return defTupleMap;
 }
 
+const getExecRequestArgDefinition = (argDefString: string): ExecutionRequestArg => {
+
+}
+
+const getExecRequestReturnDefinition = ( execReqReturnString: string[]): ExecutionRequestReturn => {
+
+}
+
 const generateExecRequest = (execRequestTuple: string[]): GQLExecutionRequest => {
-  console.log(execRequestTuple);
+  const execRequestSignature = execRequestTuple[0];
+  const execRequestReturnVal = execRequestTuple[1];
+  const emptySignatureSegmentPattern = new RegExp(EMPTY_STRING_PATTERN);
+  const execRequestSignatureSplitPattern = new RegExp(SIGNATURE_SPLIT_PATTERN);
+  const execRequestSignatureTuple = execRequestSignature.split(execRequestSignatureSplitPattern).filter( signatureSegment => !emptySignatureSegmentPattern.test(signatureSegment) );
+  const execRequestName = execRequestSignatureTuple[0];
+  const execRequestArgs = execRequestSignatureTuple.length-1;
+  const execRequestArgDefs = [];
+  for (let argDefIndex = 1; argDefIndex < execRequestSignatureTuple.length; argDefIndex++) {
+    const argDef = getExecRequestArgDefinition(execRequestSignatureTuple[argDefIndex]);
+    execRequestArgDefs.push(argDef);
+  }
+  const execRequestReturn = getExecRequestReturnDefinition(execRequestReturnVal);
+  return {
+    requestName: execRequestName,
+    requestArgs: execRequestArgs,
+    requestArgDefs: execRequestArgDefs,
+    requestReturn: execRequestReturn
+  }
 }
 
 const generateRootOperationTypeDefinitions = (rootOpTupleMap: GQLRootOperationTupleMap): GQLRootOperationMap => {
@@ -62,10 +88,10 @@ const generateRootOperationTypeDefinitions = (rootOpTupleMap: GQLRootOperationTu
     if(rootOpTuple){
       operationMap[rootOpName].rootOperationName = rootOpName as ROOT_OP_NAMES;
       operationMap[rootOpName].permittedRequests = [];
-      for(const executionRequestSignature of rootOpTuple){
-        const execReqSignatureSeparatorPattern = new RegExp(ER_SIGNATURE_SPLIT_PATTERN);
-        const execRequestSignatureTuple = executionRequestSignature.split(execReqSignatureSeparatorPattern)
-        const execRequest = generateExecRequest(execRequestSignatureTuple);
+      for(const executionRequestString of rootOpTuple){
+        const execReqStringSeparatorPattern = new RegExp(ER_SPLIT_PATTERN);
+        const execRequestTuple = executionRequestString.split(execReqStringSeparatorPattern)
+        const execRequest = generateExecRequest(execRequestTuple);
         operationMap[rootOpName].permittedRequests.push(execRequest);
       }
     }

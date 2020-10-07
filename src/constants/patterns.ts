@@ -14,4 +14,6 @@ export const CHARAC_CLEAN_PATTERN = `\\s+|${GQL_NAMED_TYPES.OBJECT_TYPE}|{|}`;
 
 export const EMPTY_STRING_PATTERN = `^$`;
 
-export const ER_SIGNATURE_SPLIT_PATTERN = `(?<=\\)|^\\w+):`;
+export const ER_SPLIT_PATTERN = `(?<=\\)|^\\w+):`;
+
+export const SIGNATURE_SPLIT_PATTERN = `\\(|,|\\)`;
