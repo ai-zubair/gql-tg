@@ -61,6 +61,7 @@ export type ArgTuple = [string, string];
 export interface ExecutionRequestArg {
   argName: string;
   argType: GQL_INPUT_TYPES;
+  scalarTypeName?: string;
   nonScalarTypeName?: string;
   isOptional: boolean;
 }
@@ -72,6 +73,6 @@ export interface ExecutionRequestReturn {
   isListValueOptioal: boolean; 
 }
 
-export interface NonScalarTypeMap{
-  [nonScalarTypeName: string]: GQL_NAMED_TYPES.ENUM | GQL_NAMED_TYPES.INPUT | GQL_NAMED_TYPES.OBJECT_TYPE | GQL_NAMED_TYPES.UNION; 
+export interface GQLNamedTypeMap{
+  [GQLtypeLabel: string]: GQL_NAMED_TYPES | GQL_INPUT_TYPES | GQL_OUTPUT_TYPES;
 }

@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, NonScalarTypeMap, GQL_NAMED_TYPES } from './types';
-import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN } from './constants';
+import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, GQLNamedTypeMap, GQL_NAMED_TYPES, GQL_INPUT_TYPES } from './types';
+import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN, scalarTypeMap } from './constants';
 
 const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
   if(!schemaURL.endsWith('.graphql')){
@@ -27,10 +27,10 @@ const getRootOperationDefinitionStrings = (typeDefinitionStrings: string[]): str
 }
 
 
-const getNonScalarTypeMap = (typeDefinitionStrings: string[]): NonScalarTypeMap => {
+const getNamedTypeMap = (typeDefinitionStrings: string[]): GQLNamedTypeMap => {
   const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
   const nonScalarTypeDefinitions = typeDefinitionStrings.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
-  const typeMap = {};
+  const typeMap = {...scalarTypeMap};
   nonScalarTypeDefinitions.forEach( typeDefinition => {
     const typeDefTuple = typeDefinition.split(/(?=\s*){|=/);
     const typeSignature = typeDefTuple[0];
@@ -39,11 +39,8 @@ const getNonScalarTypeMap = (typeDefinitionStrings: string[]): NonScalarTypeMap 
     const nonScalarTypeLabel = typeSignatureTuple[1];
     typeMap[nonScalarTypeLabel] = nonScalarTypeName.toUpperCase();
   })
-  console.log(typeMap);
   return typeMap;
 }
-
-getNonScalarTypeMap(generateTypeDefinitionStrings('./mockup.schema.graphql'));
 
 const generateRootOperationDefTuples = (rootOperationDefinitionStrings: string[]): GQLRootOperationTupleMap => {
   if(rootOperationDefinitionStrings.length === 0){
@@ -70,9 +67,19 @@ const getExecRequestArgDefinition = (argDefString: string): ExecutionRequestArg 
   const argSplitPattern = new RegExp(ARG_SPLIT_PATTERN);
   const argTuple = argDefString.split(argSplitPattern) as ArgTuple;
   const argName = argTuple[0];
-  const argType = argTuple[1];
-  const isArgOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(argType);
-  
+  const argTypeSignature = argTuple[1];
+  const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(argTypeSignature);
+  const namedTypeMap = getNamedTypeMap(generateTypeDefinitionStrings('./mockup.schema.graphql'));
+  const argType = namedTypeMap[argTypeSignature.replace('!','')] as GQL_INPUT_TYPES;
+  const scalarTypeName = argType === GQL_INPUT_TYPES.SCALAR ? argTypeSignature.replace('!',''): undefined;
+  const nonScalarTypeName = argType !== GQL_INPUT_TYPES.SCALAR ? argTypeSignature.replace('!','') : undefined;
+  return {
+    argName,
+    argType,
+    scalarTypeName,
+    nonScalarTypeName,
+    isOptional
+  }
 }
 
 const getExecRequestReturnDefinition = ( execReqReturnString: string): ExecutionRequestReturn => {
@@ -90,6 +97,7 @@ const generateExecRequest = (execRequestTuple: string[]): GQLExecutionRequest =>
   const execRequestArgDefs = [];
   for (let argDefIndex = 1; argDefIndex < execRequestSignatureTuple.length; argDefIndex++) {
     const argDef = getExecRequestArgDefinition(execRequestSignatureTuple[argDefIndex]);
+    // console.log(argDef);
     execRequestArgDefs.push(argDef);
   }
   const execRequestReturn = getExecRequestReturnDefinition(execRequestReturnVal);
@@ -120,8 +128,9 @@ const generateRootOperationTypeDefinitions = (rootOpTupleMap: GQLRootOperationTu
       }
     }
   }
+  console.log(JSON.stringify(operationMap,undefined,2));
   return operationMap;
   
 }
 
-// generateRootOperationTypeDefinitions(generateRootOperationDefTuples(getRootOperationDefinitionStrings(generateTypeDefinitionStrings('./mockup.schema.graphql'))));
+generateRootOperationTypeDefinitions(generateRootOperationDefTuples(getRootOperationDefinitionStrings(generateTypeDefinitionStrings('./mockup.schema.graphql'))));
