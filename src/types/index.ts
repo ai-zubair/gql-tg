@@ -67,10 +67,12 @@ export interface ExecutionRequestArg {
 }
 
 export interface ExecutionRequestReturn {
-  type: GQL_OUTPUT_TYPES;
+  returnType: GQL_OUTPUT_TYPES;
+  scalarTypeName?: string;
+  nonScalarTypeName?: string;
   isOptional: boolean;
   isList: boolean;
-  isListValueOptioal: boolean; 
+  isListValueOptional?: boolean; 
 }
 
 export interface GQLNamedTypeMap{

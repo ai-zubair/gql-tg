@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, GQLNamedTypeMap, GQL_NAMED_TYPES, GQL_INPUT_TYPES } from './types';
+import { fstat, readFileSync, writeFileSync } from 'fs';
+import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg, ExecutionRequestReturn, ArgTuple, GQLNamedTypeMap, GQL_NAMED_TYPES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES } from './types';
 import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN, scalarTypeMap } from './constants';
 
 const generateTypeDefinitionStrings = (schemaURL: string): string[] => {
@@ -83,7 +83,22 @@ const getExecRequestArgDefinition = (argDefString: string): ExecutionRequestArg 
 }
 
 const getExecRequestReturnDefinition = ( execReqReturnString: string): ExecutionRequestReturn => {
-
+  const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(execReqReturnString);
+  const isList = new RegExp('^\\[').test(execReqReturnString);
+  const isListValueOptional = isList ? new RegExp('\\w\\]\\W?$').test(execReqReturnString): undefined;
+  const namedTypeMap = getNamedTypeMap(generateTypeDefinitionStrings('./mockup.schema.graphql'));
+  const returnType = namedTypeMap[execReqReturnString.replace(/\[|\]|!/g,'')] as GQL_OUTPUT_TYPES;
+  const scalarTypeName = returnType === GQL_OUTPUT_TYPES.SCALAR ? execReqReturnString.replace(/\[|\]|!/g,''): undefined;
+  const nonScalarTypeName = returnType !== GQL_OUTPUT_TYPES.SCALAR ? execReqReturnString.replace(/\[|\]|!/g,''): undefined;
+  
+  return {
+    returnType,
+    scalarTypeName,
+    nonScalarTypeName,
+    isOptional,
+    isList,
+    isListValueOptional
+  }
 }
 
 const generateExecRequest = (execRequestTuple: string[]): GQLExecutionRequest => {
@@ -97,7 +112,6 @@ const generateExecRequest = (execRequestTuple: string[]): GQLExecutionRequest =>
   const execRequestArgDefs = [];
   for (let argDefIndex = 1; argDefIndex < execRequestSignatureTuple.length; argDefIndex++) {
     const argDef = getExecRequestArgDefinition(execRequestSignatureTuple[argDefIndex]);
-    // console.log(argDef);
     execRequestArgDefs.push(argDef);
   }
   const execRequestReturn = getExecRequestReturnDefinition(execRequestReturnVal);
@@ -128,7 +142,7 @@ const generateRootOperationTypeDefinitions = (rootOpTupleMap: GQLRootOperationTu
       }
     }
   }
-  console.log(JSON.stringify(operationMap,undefined,2));
+  writeFileSync('./test.json',JSON.stringify(operationMap,undefined,2));
   return operationMap;
   
 }
