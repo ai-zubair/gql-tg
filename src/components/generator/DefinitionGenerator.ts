@@ -1,18 +1,18 @@
 import { writeFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, ROOT_OP_NAMES, GQLExecutionRequest, ExecutionRequestArg, ExecutionRequestReturn, ArgTuple, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQLschemaParser } from '../../types';
+import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, ExecutionRequestReturn, ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQLschemaParser } from '../../types';
 import { DELIM, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN } from '../../constants';
 import { SchemaParser } from '../parser/SchemaParser';
 
 class DefinitionGenerator {
   public schemaParser: GQLschemaParser;
-  public rootOperationDefTupleMap: GQLRootOperationTupleMap;
+  private rootOperationDefTupleMap: GQLRootOperationTupleMap;
 
   constructor(public schemaURL: string) {
     this.schemaParser = new SchemaParser(schemaURL);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
   }
 
-  generateRootOperationDefTuples(): GQLRootOperationTupleMap {
+  private generateRootOperationDefTuples(): GQLRootOperationTupleMap {
     if(this.schemaParser.rootOperationDefinitions.length === 0){
       throw new Error("No root operation type defintions found in the schema file!"); 
     }
@@ -34,7 +34,7 @@ class DefinitionGenerator {
     return defTupleMap;
   }
 
-  getExecRequestArgDefinition(argDefString: string): ExecutionRequestArg{
+  private getExecRequestArgDefinition(argDefString: string): ExecutionRequestArg{
     const argSplitPattern = new RegExp(ARG_SPLIT_PATTERN);
     const argTuple = argDefString.split(argSplitPattern) as ArgTuple;
     const argName = argTuple[0];
@@ -52,7 +52,7 @@ class DefinitionGenerator {
     }
   }
 
-  getExecRequestReturnDefinition( execReqReturnString: string): ExecutionRequestReturn{
+  private getExecRequestReturnDefinition( execReqReturnString: string): ExecutionRequestReturn{
     const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(execReqReturnString);
     const isList = new RegExp('^\\[').test(execReqReturnString);
     const isListValueOptional = isList ? new RegExp('\\w\\]\\W?$').test(execReqReturnString): undefined;
@@ -70,7 +70,7 @@ class DefinitionGenerator {
     }
   }
 
-  generateExecRequest(execRequestTuple: string[]): GQLExecutionRequest{
+  private generateExecRequest(execRequestTuple: string[]): GQLExecutionRequest{
     const execRequestSignature = execRequestTuple[0];
     const execRequestReturnVal = execRequestTuple[1];
     const emptySignatureSegmentPattern = new RegExp(EMPTY_STRING_PATTERN);
@@ -92,7 +92,7 @@ class DefinitionGenerator {
     }
   }
 
-  generateRootOperationTypeDefinitions(): GQLRootOperationMap{
+  public generateRootOperationTypeDefinitions(): GQLRootOperationMap{
     const operationMap: GQLRootOperationMap = {
       [ROOT_OP_NAMES.QUERY]: this.rootOperationDefTupleMap[ROOT_OP_NAMES.QUERY] ? {} as GQLRootOperation : undefined,
       [ROOT_OP_NAMES.MUTATION]: this.rootOperationDefTupleMap[ROOT_OP_NAMES.MUTATION] ? {} as GQLRootOperation : undefined,
