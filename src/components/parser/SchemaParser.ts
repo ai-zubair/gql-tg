@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { GQLNamedTypeMap, GQLschemaParser } from '../../types';
-import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, scalarTypeMap, DELIM_INSERTION_PATTERN, STX_CHARAC_PATTERN } from '../../constants';
+import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, DELIM_INSERTION_PATTERN, STX_CHARAC_PATTERN, scalarTypeMap } from '../../constants';
 
 class SchemaParser implements GQLschemaParser{
 

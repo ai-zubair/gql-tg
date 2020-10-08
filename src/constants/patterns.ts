@@ -1,5 +1,5 @@
 import { ROOT_OP_NAMES, GQL_NAMED_TYPES } from '../types';
-import { DELIM } from '../constants';
+import { DELIM } from './parsing';
 
 export const DEF_GEN_PATTERN = `\\n(?=\\s*${GQL_NAMED_TYPES.OBJECT_TYPE}|\\s*${GQL_NAMED_TYPES.INPUT}|\\s*${GQL_NAMED_TYPES.ENUM}|\\s*${GQL_NAMED_TYPES.INTERFACE}|\\s*${GQL_NAMED_TYPES.UNION})`;
 
