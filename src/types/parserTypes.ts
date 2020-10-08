@@ -8,4 +8,5 @@ export interface GQLschemaParser{
   typeDefinitions: string[];
   rootOperationDefinitions: string[];
   namedTypeMap: GQLNamedTypeMap;
+  parsingDelimiter: string;
 }

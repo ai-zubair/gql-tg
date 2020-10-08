@@ -4,6 +4,7 @@ import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, scalarTy
 
 class SchemaParser implements GQLschemaParser{
 
+  public parsingDelimiter: string = DELIM;
   public typeDefinitions: string[] = [];
   public rootOperationDefinitions: string[] = [];
   public namedTypeMap: GQLNamedTypeMap = {};
@@ -25,7 +26,9 @@ class SchemaParser implements GQLschemaParser{
       const defGenPattern = new RegExp(DEF_GEN_PATTERN,'i');
       const typeDefinitionList = schemaFileData.split(defGenPattern);
       const emptyDefPattern = new RegExp(EMPTY_STRING_PATTERN);
-      const cleanedDefinitionList = typeDefinitionList.map( typeDefinition => typeDefinition.trim().replace(/\n/g, DELIM)).filter( typeDef => !emptyDefPattern.test(typeDef));
+      const cleanedDefinitionList = typeDefinitionList.map( typeDefinition => typeDefinition.trim().replace(/\n/g, this.parsingDelimiter))
+                                                      .filter( typeDef => !emptyDefPattern.test(typeDef));
+      console.log(cleanedDefinitionList);
       return cleanedDefinitionList;
     }catch(err){
       throw new Error("Failed to generate type definition strings!");

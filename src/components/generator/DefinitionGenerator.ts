@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, ExecutionRequestReturn, ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQLschemaParser } from '../../types';
-import { DELIM, CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN } from '../../constants';
+import { CHARAC_CLEAN_PATTERN, EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN } from '../../constants';
 import { SchemaParser } from '../parser/SchemaParser';
 
 class DefinitionGenerator {
@@ -25,7 +25,7 @@ class DefinitionGenerator {
     }
     characterCleanedRootDefintions.forEach( rootDefString => {
       console.log(rootDefString);
-      let rootDefTuple = rootDefString.split(DELIM);
+      let rootDefTuple = rootDefString.split(this.schemaParser.parsingDelimiter);
       const rootOpName = rootDefTuple.shift().toUpperCase();
       const emptyAttributePattern = new RegExp(EMPTY_STRING_PATTERN);
       rootDefTuple = rootDefTuple.filter( execRequest => !emptyAttributePattern.test(execRequest) );
