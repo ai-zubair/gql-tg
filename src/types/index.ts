@@ -30,6 +30,8 @@ export enum GQL_WRAPPER_TYPES {
   NON_NULL = "NON_NULL"
 }
 
+export type RootOperationTuple = [];
+
 export interface GQLRootOperationTupleMap {
   [ROOT_OP_NAMES.QUERY]: string[] | undefined;
   [ROOT_OP_NAMES.MUTATION]: string[] | undefined;
@@ -77,4 +79,10 @@ export interface ExecutionRequestReturn {
 
 export interface GQLNamedTypeMap{
   [GQLtypeLabel: string]: GQL_NAMED_TYPES | GQL_INPUT_TYPES | GQL_OUTPUT_TYPES;
+}
+
+export interface GQLschemaParser{
+  typeDefinitions: string[];
+  rootOperationDefinitions: string[];
+  namedTypeMap: GQLNamedTypeMap;
 }
