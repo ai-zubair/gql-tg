@@ -1,5 +1,7 @@
-import { ROOT_OP_NAMES, GQL_NAMED_TYPES } from '../types';
-import { DELIM } from './parsing';
+import { GQL_NAMED_TYPES, ROOT_OP_NAMES } from '../types';
+import { DELIM } from '../constants/parsing';
+
+export const DELIM_INSERTION_PATTERN = `\\n|(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}|${GQL_NAMED_TYPES.INPUT}|${GQL_NAMED_TYPES.ENUM}|${GQL_NAMED_TYPES.INTERFACE}|${GQL_NAMED_TYPES.UNION})\\s+|=|\\|`;
 
 export const DEF_GEN_PATTERN = `\\n(?=\\s*${GQL_NAMED_TYPES.OBJECT_TYPE}|\\s*${GQL_NAMED_TYPES.INPUT}|\\s*${GQL_NAMED_TYPES.ENUM}|\\s*${GQL_NAMED_TYPES.INTERFACE}|\\s*${GQL_NAMED_TYPES.UNION})`;
 
@@ -11,16 +13,6 @@ export const SUBSCRIPTION_OP_PATTERN = `(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}${DELI
 
 export const ROOT_OP_PATTERN = `${QUERY_OP_PATTERN}|${MUTATION_OP_PATTERN}|${SUBSCRIPTION_OP_PATTERN}`;
 
+export const TERMINAL_DELIM_PATTERN = `${DELIM}$`;
+
 export const STX_CHARAC_PATTERN = `\\s+|{|}`;
-
-export const EMPTY_STRING_PATTERN = `^$`;
-
-export const ER_SPLIT_PATTERN = `(?<=\\)|^\\w+):`;
-
-export const SIGNATURE_SPLIT_PATTERN = `\\(|,|\\)`;
-
-export const ARG_SPLIT_PATTERN = `:`;
-
-export const REQUIRED_ARG_PATTERN = `!$`;
-
-export const DELIM_INSERTION_PATTERN = `\\n|(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}|${GQL_NAMED_TYPES.INPUT}|${GQL_NAMED_TYPES.ENUM}|${GQL_NAMED_TYPES.INTERFACE}|${GQL_NAMED_TYPES.UNION})\\s+|=|\\|`
