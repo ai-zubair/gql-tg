@@ -1,6 +1,13 @@
 import { readFileSync } from 'fs';
 import { GQLNamedTypeMap, GQLschemaParser, TokenizedTypeDefinition } from '../../types';
-import { DEF_GEN_PATTERN, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, DELIM_INSERTION_PATTERN, STX_CHARAC_PATTERN,TERMINAL_DELIM_PATTERN} from '../../patterns';
+import { 
+  DEF_GEN_PATTERN, 
+  ROOT_OP_PATTERN, 
+  EMPTY_STRING_PATTERN, 
+  DELIM_INSERTION_PATTERN, 
+  STX_CHARAC_PATTERN,
+  TERMINAL_DELIM_PATTERN
+} from '../../patterns';
 import { DELIM, scalarTypeMap } from '../../constants';
 
 class SchemaParser implements GQLschemaParser{

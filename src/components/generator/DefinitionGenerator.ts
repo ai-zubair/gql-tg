@@ -1,6 +1,30 @@
 import { writeFileSync } from 'fs';
-import { GQLRootOperationTupleMap, GQLRootOperationMap, GQLRootOperation, GQLExecutionRequest, ExecutionRequestArg, ArgTuple, ExecutionRequestReturn, ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQLschemaParser, TokenizedTypeDefinition, ERargumentDefinition, ERreturnDefinition, ExecutionRequestDefinition, RootOperationTuple } from '../../types';
-import { EMPTY_STRING_PATTERN, ER_SPLIT_PATTERN, SIGNATURE_SPLIT_PATTERN, ARG_SPLIT_PATTERN, REQUIRED_ARG_PATTERN, LIST_VALUE_OPTIONAL_PATTERN, STRIP_WRAPPING_TYPE_PATTERN, LIST_PATTERN } from '../../patterns';
+import { 
+  GQLRootOperationTupleMap, 
+  GQLRootOperationMap, 
+  GQLRootOperation, 
+  GQLExecutionRequest, 
+  ExecutionRequestArg, 
+  ArgTuple, 
+  ExecutionRequestReturn, 
+  ROOT_OP_NAMES, 
+  GQL_INPUT_TYPES, 
+  GQL_OUTPUT_TYPES, 
+  GQLschemaParser, 
+  TokenizedTypeDefinition, 
+  ERargumentDefinition, 
+  ERreturnDefinition, 
+  ExecutionRequestDefinition, 
+  RootOperationTuple } from '../../types';
+import { 
+  EMPTY_STRING_PATTERN, 
+  ER_SPLIT_PATTERN, 
+  SIGNATURE_SPLIT_PATTERN, 
+  ARG_SPLIT_PATTERN, 
+  REQUIRED_ARG_PATTERN, 
+  LIST_VALUE_OPTIONAL_PATTERN, 
+  STRIP_WRAPPING_TYPE_PATTERN, 
+  LIST_PATTERN } from '../../patterns';
 import { SchemaParser } from '../parser/SchemaParser';
 
 class DefinitionGenerator {
@@ -72,7 +96,8 @@ class DefinitionGenerator {
     const execRequestReturnVal = execRequestTuple[1];
     const emptySignatureSegmentPattern = new RegExp(EMPTY_STRING_PATTERN);
     const execRequestSignatureSplitPattern = new RegExp(SIGNATURE_SPLIT_PATTERN);
-    const execRequestSignatureTuple = execRequestSignature.split(execRequestSignatureSplitPattern).filter( signatureSegment => !emptySignatureSegmentPattern.test(signatureSegment) );
+    const execRequestSignatureTuple = execRequestSignature.split(execRequestSignatureSplitPattern)
+                                                          .filter( signatureSegment => !emptySignatureSegmentPattern.test(signatureSegment) );
     const execRequestName = execRequestSignatureTuple[0];
     const execRequestArgs = execRequestSignatureTuple.length-1;
     const execRequestArgDefs = [];
