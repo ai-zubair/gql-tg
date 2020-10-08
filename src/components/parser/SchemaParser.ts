@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { GQLNamedTypeMap, GQLschemaParser } from '../../types';
-import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, scalarTypeMap } from '../../constants';
+import { DEF_GEN_PATTERN, DELIM, ROOT_OP_PATTERN, EMPTY_STRING_PATTERN, scalarTypeMap, DELIM_INSERTION_PATTERN, STX_CHARAC_PATTERN } from '../../constants';
 
 class SchemaParser implements GQLschemaParser{
 
@@ -26,9 +26,10 @@ class SchemaParser implements GQLschemaParser{
       const defGenPattern = new RegExp(DEF_GEN_PATTERN,'i');
       const typeDefinitionList = schemaFileData.split(defGenPattern);
       const emptyDefPattern = new RegExp(EMPTY_STRING_PATTERN);
-      const cleanedDefinitionList = typeDefinitionList.map( typeDefinition => typeDefinition.trim().replace(/\n/g, this.parsingDelimiter))
-                                                      .filter( typeDef => !emptyDefPattern.test(typeDef));
-      console.log(cleanedDefinitionList);
+      const delimInsertionPattern = new RegExp(DELIM_INSERTION_PATTERN,'gi');
+      const stxCharacPattern = new RegExp(STX_CHARAC_PATTERN,'gi')
+      const cleanedDefinitionList = typeDefinitionList.filter( typeDef => !emptyDefPattern.test(typeDef))
+                                                      .map( typeDef => typeDef.replace(delimInsertionPattern,this.parsingDelimiter).replace(stxCharacPattern,''));
       return cleanedDefinitionList;
     }catch(err){
       throw new Error("Failed to generate type definition strings!");
@@ -46,11 +47,9 @@ class SchemaParser implements GQLschemaParser{
     const nonScalarTypeDefinitions = this.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
     const typeMap = {...scalarTypeMap};
     nonScalarTypeDefinitions.forEach( typeDefinition => {
-      const typeDefTuple = typeDefinition.split(/(?=\s*){|=/);
-      const typeSignature = typeDefTuple[0];
-      const typeSignatureTuple = typeSignature.split(' ');
-      const nonScalarTypeName = typeSignatureTuple[0];
-      const nonScalarTypeLabel = typeSignatureTuple[1];
+      const typeDefTuple = typeDefinition.split(/::/);
+      const nonScalarTypeName = typeDefTuple[0];
+      const nonScalarTypeLabel = typeDefTuple[1];
       typeMap[nonScalarTypeLabel] = nonScalarTypeName.toUpperCase();
     })
     return typeMap;
