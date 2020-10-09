@@ -1,20 +1,20 @@
-import { write, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { 
-  GQLRootOperationTupleMap, 
-  GQLRootOperationMap, 
-  GQLRootOperation, 
-  GQLExecutionRequest, 
-  ExecutionRequestArg, 
-  ArgTuple, 
-  ExecutionRequestReturn, 
   ROOT_OP_NAMES, 
   GQL_INPUT_TYPES, 
   GQL_OUTPUT_TYPES,  
   TokenizedTypeDefinition, 
+  GQLRootOperationTupleMap, 
+  RootOperationTuple, 
+  GQLRootOperationMap, 
+  GQLRootOperation, 
+  GQLExecutionRequest, 
+  ExecutionRequestArg, 
   ERargumentDefinition, 
+  ArgTuple, 
+  ExecutionRequestReturn, 
   ERreturnDefinition, 
   ExecutionRequestDefinition, 
-  RootOperationTuple, 
   NonScalarTypeMap, 
   NonScalarTypeField, 
   NonScalarFieldReturn, 
@@ -24,15 +24,15 @@ import {
 } from '../../types';
 
 import { 
-  ROOT_OP_PATTERN,
   EMPTY_STRING_PATTERN, 
+  ROOT_OP_PATTERN,
   ER_SPLIT_PATTERN, 
   SIGNATURE_SPLIT_PATTERN, 
   ARG_SPLIT_PATTERN, 
   REQUIRED_ARG_PATTERN, 
-  LIST_VALUE_OPTIONAL_PATTERN, 
   STRIP_WRAPPING_TYPE_PATTERN, 
-  LIST_PATTERN 
+  LIST_PATTERN, 
+  LIST_VALUE_OPTIONAL_PATTERN, 
 } from '../../patterns';
 
 import { scalarTypeMap } from '../../constants';
@@ -45,6 +45,7 @@ interface GQLschemaTokenizer{
   nonScalarTypeDefinitions: TokenizedTypeDefinition[];
   parsingDelimiter: string;
 }
+
 class Parser {
   public tokenizer: GQLschemaTokenizer;
   private rootOperationDefTupleMap: GQLRootOperationTupleMap;
