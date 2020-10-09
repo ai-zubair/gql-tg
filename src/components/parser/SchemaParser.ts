@@ -15,12 +15,14 @@ class SchemaParser implements GQLschemaParser{
   public parsingDelimiter: string = DELIM;
   public typeDefinitions: TokenizedTypeDefinition[] = [];
   public rootOperationDefinitions: TokenizedTypeDefinition[] = [];
+  public nonScalarTypeDefinitions: TokenizedTypeDefinition[] = [];
   public namedTypeMap: GQLNamedTypeMap = {};
   
   constructor(public schemaURL: string) {
     this.typeDefinitions = this.tokenizeTypeDefinitions();
     this.rootOperationDefinitions = this.getTokenizedRootOperationDefinitions();
     this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
+    this.nonScalarTypeDefinitions = this.getNonScalarTypeDefinitions();
   }
 
   private tokenizeTypeDefinitions(): TokenizedTypeDefinition[]{
@@ -53,6 +55,12 @@ class SchemaParser implements GQLschemaParser{
     return rootOperationTypeDefinitions;
   }
   
+  private getNonScalarTypeDefinitions(): TokenizedTypeDefinition[]{
+    const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
+    const nonScalarTypeDefinitions = this.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition) );
+    return nonScalarTypeDefinitions;
+  }
+
   private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
     const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
     const nonScalarTypeDefinitions = this.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));

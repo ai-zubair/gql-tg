@@ -19,6 +19,7 @@ export type TokenizedTypeDefinition = string;
 export interface GQLschemaParser{
   typeDefinitions: TokenizedTypeDefinition[];
   rootOperationDefinitions: TokenizedTypeDefinition[];
+  nonScalarTypeDefinitions: TokenizedTypeDefinition[];
   namedTypeMap: GQLNamedTypeMap;
   parsingDelimiter: string;
 }
