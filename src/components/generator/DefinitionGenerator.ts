@@ -144,13 +144,14 @@ class DefinitionGenerator {
     const nonScalarTypeMap: NonScalarTypeMap = {};
     this.schemaParser.nonScalarTypeDefinitions.forEach( (nonScalarTypeDef: TokenizedTypeDefinition) => {
       const nonScalarTypeDefTuple = nonScalarTypeDef.split(this.schemaParser.parsingDelimiter);
-      const typeName = nonScalarTypeDefTuple[0] as GQL_NAMED_TYPES;
+      const typeName = nonScalarTypeDefTuple[0].toUpperCase() as GQL_NAMED_TYPES;
       const typeLabel = nonScalarTypeDefTuple[1];
       const typeFields = nonScalarTypeDefTuple.length > 2 ? [] as NonScalarTypeField[] : undefined;
       for (let typeFieldIndex = 2; typeFieldIndex < nonScalarTypeDefTuple.length; typeFieldIndex++) {
+        const isEnumOrUnionType = typeName === GQL_NAMED_TYPES.ENUM || typeName === GQL_NAMED_TYPES.UNION;
         const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(':');
         const fieldLabel = fieldTuple[0];
-        const fieldReturn = this.parseReturnDefinition(fieldTuple[1]) as NonScalarFieldReturn;
+        const fieldReturn = isEnumOrUnionType ? undefined : this.parseReturnDefinition(fieldTuple[1]) as NonScalarFieldReturn;
         typeFields.push({
           fieldLabel,
           fieldReturn

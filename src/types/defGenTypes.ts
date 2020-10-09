@@ -91,7 +91,7 @@ export interface NonScalarType {
 
 export interface NonScalarTypeField {
   fieldLabel: string;
-  fieldReturn: NonScalarFieldReturn;
+  fieldReturn: NonScalarFieldReturn | undefined;
 }
 
 export interface NonScalarFieldReturn extends ExecutionRequestReturn{
