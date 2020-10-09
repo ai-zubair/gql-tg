@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { write, writeFileSync } from 'fs';
 import { 
   GQLRootOperationTupleMap, 
   GQLRootOperationMap, 
@@ -15,7 +15,7 @@ import {
   ERargumentDefinition, 
   ERreturnDefinition, 
   ExecutionRequestDefinition, 
-  RootOperationTuple } from '../../types';
+  RootOperationTuple, NonScalarTypeMap, NonScalarTypeField, NonScalarFieldReturn, GQL_NAMED_TYPES } from '../../types';
 import { 
   EMPTY_STRING_PATTERN, 
   ER_SPLIT_PATTERN, 
@@ -133,9 +133,36 @@ class DefinitionGenerator {
         }
       }
     }
-    writeFileSync('./test.json',JSON.stringify(operationMap,undefined,2));
+    const nonScalarTypeMap = this.parseNonScalarTypeDefinitions();
+    writeFileSync('./rootOp.json',JSON.stringify(operationMap,undefined,2));
+    writeFileSync('./nonScala.json',JSON.stringify(nonScalarTypeMap, undefined, 2));
     return operationMap;
     
+  }
+
+  public parseNonScalarTypeDefinitions(): NonScalarTypeMap {
+    const nonScalarTypeMap: NonScalarTypeMap = {};
+    this.schemaParser.nonScalarTypeDefinitions.forEach( (nonScalarTypeDef: TokenizedTypeDefinition) => {
+      const nonScalarTypeDefTuple = nonScalarTypeDef.split(this.schemaParser.parsingDelimiter);
+      const typeName = nonScalarTypeDefTuple[0] as GQL_NAMED_TYPES;
+      const typeLabel = nonScalarTypeDefTuple[1];
+      const typeFields = nonScalarTypeDefTuple.length > 2 ? [] as NonScalarTypeField[] : undefined;
+      for (let typeFieldIndex = 2; typeFieldIndex < nonScalarTypeDefTuple.length; typeFieldIndex++) {
+        const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(':');
+        const fieldLabel = fieldTuple[0];
+        const fieldReturn = this.parseReturnDefinition(fieldTuple[1]) as NonScalarFieldReturn;
+        typeFields.push({
+          fieldLabel,
+          fieldReturn
+        })
+      }
+      nonScalarTypeMap[typeLabel] = {
+        typeName,
+        typeLabel,
+        typeFields
+      }
+    });
+    return nonScalarTypeMap;
   }
 }
 
