@@ -1,4 +1,4 @@
-import { ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES } from './gqlTypes';
+import { ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQL_NAMED_TYPES } from './gqlTypes';
 
 /**
  * @type ExecutionRequestSignature =>
@@ -77,4 +77,23 @@ export interface ExecutionRequestReturn {
   isOptional: boolean;
   isList: boolean;
   isListValueOptional?: boolean; 
+}
+
+export interface NonScalarTypeMap {
+  [nonScalarTypeLabel: string]: NonScalarType;
+}
+
+export interface NonScalarType {
+  typeName: GQL_NAMED_TYPES;
+  typeLabel: string;
+  typeFields?: NonScalarTypeField[]
+}
+
+export interface NonScalarTypeField {
+  fieldLabel: string;
+  fieldReturn: NonScalarFieldReturn;
+}
+
+export interface NonScalarFieldReturn extends ExecutionRequestReturn{
+ 
 }
