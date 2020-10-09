@@ -1,18 +1,13 @@
-import { GQL_NAMED_TYPES, ROOT_OP_NAMES } from '../types';
-import { DELIM } from '../constants/parsing';
+export const ER_SPLIT_PATTERN = `(?<=\\)|^\\w+):`;
 
-export const DELIM_INSERTION_PATTERN = `\\n|(?<=\\b${GQL_NAMED_TYPES.OBJECT_TYPE}|\\b${GQL_NAMED_TYPES.INPUT}|\\b${GQL_NAMED_TYPES.ENUM}|\\b${GQL_NAMED_TYPES.INTERFACE}|\\b${GQL_NAMED_TYPES.UNION})\\s+(?=\\w+)|=|\\|`;
+export const SIGNATURE_SPLIT_PATTERN = `\\(|,|\\)`;
 
-export const DEF_GEN_PATTERN = `\\n(?=\\s*${GQL_NAMED_TYPES.OBJECT_TYPE}|\\s*${GQL_NAMED_TYPES.INPUT}|\\s*${GQL_NAMED_TYPES.ENUM}|\\s*${GQL_NAMED_TYPES.INTERFACE}|\\s*${GQL_NAMED_TYPES.UNION})`;
+export const ARG_SPLIT_PATTERN = `:`;
 
-export const QUERY_OP_PATTERN = `(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}${DELIM})${ROOT_OP_NAMES.QUERY}`;
+export const REQUIRED_ARG_PATTERN = `!$`;
 
-export const MUTATION_OP_PATTERN = `(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}${DELIM})${ROOT_OP_NAMES.MUTATION}`;
+export const LIST_VALUE_OPTIONAL_PATTERN = `\\w\\]\\W?$`;
 
-export const SUBSCRIPTION_OP_PATTERN = `(?<=${GQL_NAMED_TYPES.OBJECT_TYPE}${DELIM})${ROOT_OP_NAMES.SUBSCRIPTION}`;
+export const STRIP_WRAPPING_TYPE_PATTERN = `\\[|\\]|!`;
 
-export const ROOT_OP_PATTERN = `${QUERY_OP_PATTERN}|${MUTATION_OP_PATTERN}|${SUBSCRIPTION_OP_PATTERN}`;
-
-export const TERMINAL_DELIM_PATTERN = `${DELIM}$`;
-
-export const STX_CHARAC_PATTERN = `\\s+|{|}`;
+export const LIST_PATTERN = `^\\[`;

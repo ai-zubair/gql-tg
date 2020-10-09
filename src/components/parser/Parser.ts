@@ -10,12 +10,12 @@ import {
   ROOT_OP_NAMES, 
   GQL_INPUT_TYPES, 
   GQL_OUTPUT_TYPES, 
-  GQLschemaParser, 
+  GQLschemaTokenizer, 
   TokenizedTypeDefinition, 
   ERargumentDefinition, 
   ERreturnDefinition, 
   ExecutionRequestDefinition, 
-  RootOperationTuple, NonScalarTypeMap, NonScalarTypeField, NonScalarFieldReturn, GQL_NAMED_TYPES } from '../../types';
+  RootOperationTuple, NonScalarTypeMap, NonScalarTypeField, NonScalarFieldReturn, GQL_NAMED_TYPES, GQLschemaMap } from '../../types';
 import { 
   EMPTY_STRING_PATTERN, 
   ER_SPLIT_PATTERN, 
@@ -25,19 +25,19 @@ import {
   LIST_VALUE_OPTIONAL_PATTERN, 
   STRIP_WRAPPING_TYPE_PATTERN, 
   LIST_PATTERN } from '../../patterns';
-import { SchemaParser } from '../parser/SchemaParser';
+import { Tokenizer } from '../tokenizer/Tokenizer';
 
-class DefinitionGenerator {
-  public schemaParser: GQLschemaParser;
+class Parser {
+  public tokenizer: GQLschemaTokenizer;
   private rootOperationDefTupleMap: GQLRootOperationTupleMap;
 
-  constructor(public schemaURL: string, customSchemaParser?: GQLschemaParser) {
-    this.schemaParser = customSchemaParser || new SchemaParser(schemaURL);
+  constructor(public schemaURL: string, customTokenizer?: GQLschemaTokenizer) {
+    this.tokenizer = customTokenizer || new Tokenizer(schemaURL);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
   }
 
   private generateRootOperationDefTuples(): GQLRootOperationTupleMap {
-    if(this.schemaParser.rootOperationDefinitions.length === 0){
+    if(this.tokenizer.rootOperationDefinitions.length === 0){
       throw new Error("No root operation type defintions found in the schema file!"); 
     }
     const defTupleMap: GQLRootOperationTupleMap = {
@@ -45,8 +45,8 @@ class DefinitionGenerator {
       [ROOT_OP_NAMES.MUTATION]: undefined,
       [ROOT_OP_NAMES.SUBSCRIPTION]: undefined
     }
-    this.schemaParser.rootOperationDefinitions.forEach( (rootOpDef: TokenizedTypeDefinition) => {
-      let rootDefTuple: RootOperationTuple = rootOpDef.split(this.schemaParser.parsingDelimiter);
+    this.tokenizer.rootOperationDefinitions.forEach( (rootOpDef: TokenizedTypeDefinition) => {
+      let rootDefTuple: RootOperationTuple = rootOpDef.split(this.tokenizer.parsingDelimiter);
       const rootOpName = rootDefTuple.splice(0,2)[1].toUpperCase();
       defTupleMap[rootOpName] = rootDefTuple.length > 0 ? rootDefTuple : undefined;
     })
@@ -60,7 +60,7 @@ class DefinitionGenerator {
     const argTypeSignature = argTuple[1];
     const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(argTypeSignature);
     const argDefWithoutWrapgType = argTypeSignature.replace('!','');
-    const argType = this.schemaParser.namedTypeMap[argDefWithoutWrapgType] as GQL_INPUT_TYPES;
+    const argType = this.tokenizer.namedTypeMap[argDefWithoutWrapgType] as GQL_INPUT_TYPES;
     const scalarTypeName = argType === GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType: undefined;
     const nonScalarTypeName = argType !== GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType : undefined;
     return {
@@ -78,7 +78,7 @@ class DefinitionGenerator {
     const isListValueOptional = isList ? new RegExp(LIST_VALUE_OPTIONAL_PATTERN).test(execReqReturnString): undefined;
     const stripWrappingTypesPattern = new RegExp(STRIP_WRAPPING_TYPE_PATTERN,'g');
     const returnDefWithoutWrapgType = execReqReturnString.replace(stripWrappingTypesPattern,'');
-    const returnType = this.schemaParser.namedTypeMap[returnDefWithoutWrapgType] as GQL_OUTPUT_TYPES;
+    const returnType = this.tokenizer.namedTypeMap[returnDefWithoutWrapgType] as GQL_OUTPUT_TYPES;
     const scalarTypeName = returnType === GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     const nonScalarTypeName = returnType !== GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     return {
@@ -114,7 +114,7 @@ class DefinitionGenerator {
     }
   }
 
-  public parseRootOperations(): GQLRootOperationMap{
+  private parseRootOperations(): GQLRootOperationMap{
     const operationMap: GQLRootOperationMap = {
       [ROOT_OP_NAMES.QUERY]: this.rootOperationDefTupleMap[ROOT_OP_NAMES.QUERY] ? {} as GQLRootOperation : undefined,
       [ROOT_OP_NAMES.MUTATION]: this.rootOperationDefTupleMap[ROOT_OP_NAMES.MUTATION] ? {} as GQLRootOperation : undefined,
@@ -133,17 +133,14 @@ class DefinitionGenerator {
         }
       }
     }
-    const nonScalarTypeMap = this.parseNonScalarTypeDefinitions();
-    writeFileSync('./rootOp.json',JSON.stringify(operationMap,undefined,2));
-    writeFileSync('./nonScala.json',JSON.stringify(nonScalarTypeMap, undefined, 2));
     return operationMap;
     
   }
 
-  public parseNonScalarTypeDefinitions(): NonScalarTypeMap {
+  private parseNonScalarTypeDefinitions(): NonScalarTypeMap {
     const nonScalarTypeMap: NonScalarTypeMap = {};
-    this.schemaParser.nonScalarTypeDefinitions.forEach( (nonScalarTypeDef: TokenizedTypeDefinition) => {
-      const nonScalarTypeDefTuple = nonScalarTypeDef.split(this.schemaParser.parsingDelimiter);
+    this.tokenizer.nonScalarTypeDefinitions.forEach( (nonScalarTypeDef: TokenizedTypeDefinition) => {
+      const nonScalarTypeDefTuple = nonScalarTypeDef.split(this.tokenizer.parsingDelimiter);
       const typeName = nonScalarTypeDefTuple[0].toUpperCase() as GQL_NAMED_TYPES;
       const typeLabel = nonScalarTypeDefTuple[1];
       const typeFields = nonScalarTypeDefTuple.length > 2 ? [] as NonScalarTypeField[] : undefined;
@@ -165,6 +162,16 @@ class DefinitionGenerator {
     });
     return nonScalarTypeMap;
   }
+
+  public parseSchema(): GQLschemaMap {
+    const rootOperations = this.parseRootOperations();
+    const nonScalarTypes = this.parseNonScalarTypeDefinitions();
+    // writeFileSync('./parsedSchema.json', JSON.stringify({rootOperations, nonScalarTypes}, undefined, 2));
+    return{
+      rootOperations,
+      nonScalarTypes
+    }
+  }
 }
 
-export { DefinitionGenerator };
+export { Parser };

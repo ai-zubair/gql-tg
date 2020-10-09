@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { GQLNamedTypeMap, GQLschemaParser, TokenizedTypeDefinition } from '../../types';
+import { GQLNamedTypeMap, GQLschemaTokenizer, TokenizedTypeDefinition } from '../../types';
 import { 
   DEF_GEN_PATTERN, 
   ROOT_OP_PATTERN, 
@@ -10,7 +10,7 @@ import {
 } from '../../patterns';
 import { DELIM, scalarTypeMap } from '../../constants';
 
-class SchemaParser implements GQLschemaParser{
+class Tokenizer implements GQLschemaTokenizer{
 
   public parsingDelimiter: string = DELIM;
   public typeDefinitions: TokenizedTypeDefinition[] = [];
@@ -75,4 +75,4 @@ class SchemaParser implements GQLschemaParser{
   }
 }
 
-export { SchemaParser };
+export { Tokenizer };

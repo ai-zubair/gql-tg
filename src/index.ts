@@ -1,4 +1,4 @@
-import { DefinitionGenerator } from './components/generator/DefinitionGenerator';
+import { Parser } from './components/parser/Parser';
 
-const schemaDefGen = new DefinitionGenerator('./mockup.schema.graphql');
-schemaDefGen.parseRootOperations();
+const schemaDefGen = new Parser('./mockup.schema.graphql');
+schemaDefGen.parseSchema();
