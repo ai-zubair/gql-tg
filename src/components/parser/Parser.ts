@@ -9,14 +9,22 @@ import {
   ExecutionRequestReturn, 
   ROOT_OP_NAMES, 
   GQL_INPUT_TYPES, 
-  GQL_OUTPUT_TYPES, 
-  GQLschemaTokenizer, 
+  GQL_OUTPUT_TYPES,  
   TokenizedTypeDefinition, 
   ERargumentDefinition, 
   ERreturnDefinition, 
   ExecutionRequestDefinition, 
-  RootOperationTuple, NonScalarTypeMap, NonScalarTypeField, NonScalarFieldReturn, GQL_NAMED_TYPES, GQLschemaMap } from '../../types';
+  RootOperationTuple, 
+  NonScalarTypeMap, 
+  NonScalarTypeField, 
+  NonScalarFieldReturn, 
+  GQL_NAMED_TYPES, 
+  GQLNamedTypeMap,
+  GQLschemaMap 
+} from '../../types';
+
 import { 
+  ROOT_OP_PATTERN,
   EMPTY_STRING_PATTERN, 
   ER_SPLIT_PATTERN, 
   SIGNATURE_SPLIT_PATTERN, 
@@ -24,16 +32,41 @@ import {
   REQUIRED_ARG_PATTERN, 
   LIST_VALUE_OPTIONAL_PATTERN, 
   STRIP_WRAPPING_TYPE_PATTERN, 
-  LIST_PATTERN } from '../../patterns';
+  LIST_PATTERN 
+} from '../../patterns';
+
+import { scalarTypeMap } from '../../constants';
+
 import { Tokenizer } from '../tokenizer/Tokenizer';
 
+interface GQLschemaTokenizer{
+  typeDefinitions: TokenizedTypeDefinition[];
+  rootOperationDefinitions: TokenizedTypeDefinition[];
+  nonScalarTypeDefinitions: TokenizedTypeDefinition[];
+  parsingDelimiter: string;
+}
 class Parser {
   public tokenizer: GQLschemaTokenizer;
   private rootOperationDefTupleMap: GQLRootOperationTupleMap;
+  private namedTypeMap: GQLNamedTypeMap = {};
 
   constructor(public schemaURL: string, customTokenizer?: GQLschemaTokenizer) {
     this.tokenizer = customTokenizer || new Tokenizer(schemaURL);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
+    this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
+  }
+
+  private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
+    const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
+    const nonScalarTypeDefinitions = this.tokenizer.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
+    const typeMap = {...scalarTypeMap};
+    nonScalarTypeDefinitions.forEach( typeDefinition => {
+      const typeDefTuple = typeDefinition.split(/::/);
+      const nonScalarTypeName = typeDefTuple[0];
+      const nonScalarTypeLabel = typeDefTuple[1];
+      typeMap[nonScalarTypeLabel] = nonScalarTypeName.toUpperCase();
+    })
+    return typeMap;
   }
 
   private generateRootOperationDefTuples(): GQLRootOperationTupleMap {
@@ -60,7 +93,7 @@ class Parser {
     const argTypeSignature = argTuple[1];
     const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(argTypeSignature);
     const argDefWithoutWrapgType = argTypeSignature.replace('!','');
-    const argType = this.tokenizer.namedTypeMap[argDefWithoutWrapgType] as GQL_INPUT_TYPES;
+    const argType = this.namedTypeMap[argDefWithoutWrapgType] as GQL_INPUT_TYPES;
     const scalarTypeName = argType === GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType: undefined;
     const nonScalarTypeName = argType !== GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType : undefined;
     return {
@@ -78,7 +111,7 @@ class Parser {
     const isListValueOptional = isList ? new RegExp(LIST_VALUE_OPTIONAL_PATTERN).test(execReqReturnString): undefined;
     const stripWrappingTypesPattern = new RegExp(STRIP_WRAPPING_TYPE_PATTERN,'g');
     const returnDefWithoutWrapgType = execReqReturnString.replace(stripWrappingTypesPattern,'');
-    const returnType = this.tokenizer.namedTypeMap[returnDefWithoutWrapgType] as GQL_OUTPUT_TYPES;
+    const returnType = this.namedTypeMap[returnDefWithoutWrapgType] as GQL_OUTPUT_TYPES;
     const scalarTypeName = returnType === GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     const nonScalarTypeName = returnType !== GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     return {
@@ -166,7 +199,7 @@ class Parser {
   public parseSchema(): GQLschemaMap {
     const rootOperations = this.parseRootOperations();
     const nonScalarTypes = this.parseNonScalarTypeDefinitions();
-    // writeFileSync('./parsedSchema.json', JSON.stringify({rootOperations, nonScalarTypes}, undefined, 2));
+    writeFileSync('./parsedSchema.json', JSON.stringify({rootOperations, nonScalarTypes}, undefined, 2));
     return{
       rootOperations,
       nonScalarTypes
@@ -174,4 +207,4 @@ class Parser {
   }
 }
 
-export { Parser };
+export { GQLschemaTokenizer, Parser };

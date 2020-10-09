@@ -1,5 +1,5 @@
 import { GQL_NAMED_TYPES, ROOT_OP_NAMES } from '../types';
-import { DELIM } from '../constants/tokenizerConstants';
+import { DELIM } from '../constants';
 
 export const DELIM_INSERTION_PATTERN = `\\n|(?<=\\b${GQL_NAMED_TYPES.OBJECT_TYPE}|\\b${GQL_NAMED_TYPES.INPUT}|\\b${GQL_NAMED_TYPES.ENUM}|\\b${GQL_NAMED_TYPES.INTERFACE}|\\b${GQL_NAMED_TYPES.UNION})\\s+(?=\\w+)|=|\\|`;
 

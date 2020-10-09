@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { GQLNamedTypeMap, GQLschemaTokenizer, TokenizedTypeDefinition } from '../../types';
+import { TokenizedTypeDefinition } from '../../types';
 import { 
   DEF_GEN_PATTERN, 
   ROOT_OP_PATTERN, 
@@ -8,7 +8,8 @@ import {
   STX_CHARAC_PATTERN,
   TERMINAL_DELIM_PATTERN
 } from '../../patterns';
-import { DELIM, scalarTypeMap } from '../../constants';
+import { DELIM } from '../../constants';
+import { GQLschemaTokenizer } from '../parser/Parser';
 
 class Tokenizer implements GQLschemaTokenizer{
 
@@ -16,12 +17,10 @@ class Tokenizer implements GQLschemaTokenizer{
   public typeDefinitions: TokenizedTypeDefinition[] = [];
   public rootOperationDefinitions: TokenizedTypeDefinition[] = [];
   public nonScalarTypeDefinitions: TokenizedTypeDefinition[] = [];
-  public namedTypeMap: GQLNamedTypeMap = {};
   
   constructor(public schemaURL: string) {
     this.typeDefinitions = this.tokenizeTypeDefinitions();
     this.rootOperationDefinitions = this.getTokenizedRootOperationDefinitions();
-    this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
     this.nonScalarTypeDefinitions = this.getNonScalarTypeDefinitions();
   }
 
@@ -61,18 +60,6 @@ class Tokenizer implements GQLschemaTokenizer{
     return nonScalarTypeDefinitions;
   }
 
-  private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
-    const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
-    const nonScalarTypeDefinitions = this.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
-    const typeMap = {...scalarTypeMap};
-    nonScalarTypeDefinitions.forEach( typeDefinition => {
-      const typeDefTuple = typeDefinition.split(/::/);
-      const nonScalarTypeName = typeDefTuple[0];
-      const nonScalarTypeLabel = typeDefTuple[1];
-      typeMap[nonScalarTypeLabel] = nonScalarTypeName.toUpperCase();
-    })
-    return typeMap;
-  }
 }
 
 export { Tokenizer };

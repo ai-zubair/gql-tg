@@ -15,11 +15,3 @@ export interface GQLNamedTypeMap{
  */
 
 export type TokenizedTypeDefinition = string;
-
-export interface GQLschemaTokenizer{
-  typeDefinitions: TokenizedTypeDefinition[];
-  rootOperationDefinitions: TokenizedTypeDefinition[];
-  nonScalarTypeDefinitions: TokenizedTypeDefinition[];
-  namedTypeMap: GQLNamedTypeMap;
-  parsingDelimiter: string;
-}
