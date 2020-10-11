@@ -5,3 +5,7 @@ build
 .vscode
 
 test.json
+
+parsedSchema.json
+
+mockup.schema.grpahql

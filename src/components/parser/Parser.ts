@@ -6,21 +6,21 @@ import {
   TokenizedTypeDefinition, 
   GQLRootOperationTupleMap, 
   RootOperationTuple, 
-  GQLRootOperationMap, 
-  GQLRootOperation, 
-  GQLExecutionRequest, 
-  ExecutionRequestArg, 
   ERargumentDefinition, 
-  ArgTuple, 
-  ExecutionRequestReturn, 
   ERreturnDefinition, 
   ExecutionRequestDefinition, 
-  NonScalarTypeMap, 
-  NonScalarTypeField, 
-  NonScalarFieldReturn, 
   GQL_NAMED_TYPES, 
   GQLNamedTypeMap,
-  GQLschemaMap 
+  GQLRootOperationMap,
+  GQLRootOperation,
+  GQLExecutionRequest,
+  ExecutionRequestArg,
+  ArgTuple,
+  ExecutionRequestReturn,NonScalarTypeMap,
+  NonScalarTypeField,
+  NonScalarFieldReturn,
+  GQLschemaMap,
+  GQLschemaParser
 } from '../../types';
 
 import { 
@@ -46,15 +46,17 @@ interface GQLschemaTokenizer{
   parsingDelimiter: string;
 }
 
-class Parser {
+class Parser implements GQLschemaParser {
   public tokenizer: GQLschemaTokenizer;
   private rootOperationDefTupleMap: GQLRootOperationTupleMap;
   private namedTypeMap: GQLNamedTypeMap = {};
+  public parsedSchema: GQLschemaMap;
 
   constructor(public schemaURL: string, customTokenizer?: GQLschemaTokenizer) {
     this.tokenizer = customTokenizer || new Tokenizer(schemaURL);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
     this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
+    this.parsedSchema = this.parseSchema();
   }
 
   private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
@@ -197,7 +199,7 @@ class Parser {
     return nonScalarTypeMap;
   }
 
-  public parseSchema(): GQLschemaMap {
+  private parseSchema(): GQLschemaMap {
     const rootOperations = this.parseRootOperations();
     const nonScalarTypes = this.parseNonScalarTypeDefinitions();
     writeFileSync('./parsedSchema.json', JSON.stringify({rootOperations, nonScalarTypes}, undefined, 2));
