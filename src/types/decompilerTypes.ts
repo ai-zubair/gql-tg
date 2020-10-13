@@ -1,9 +1,9 @@
 import { ROOT_OP_NAMES, GQL_NAMED_TYPES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES } from './gqlTypes';
 
 export interface GQLRootOperationMap {
-  [ROOT_OP_NAMES.QUERY]: GQLRootOperation |  undefined;
-  [ROOT_OP_NAMES.MUTATION]: GQLRootOperation | undefined;
-  [ROOT_OP_NAMES.SUBSCRIPTION]: GQLRootOperation | undefined;
+  [ROOT_OP_NAMES.QUERY]?: GQLRootOperation;
+  [ROOT_OP_NAMES.MUTATION]?: GQLRootOperation;
+  [ROOT_OP_NAMES.SUBSCRIPTION]?: GQLRootOperation;
   [key: string]: GQLRootOperation | undefined;
 }
 

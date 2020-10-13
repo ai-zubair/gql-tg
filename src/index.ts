@@ -1,3 +1,4 @@
-import { Parser } from './components/parser/Parser';
+import { Decompiler } from './components/decompiler/Decompiler';
 
-const parser = new Parser('./mockup.schema.graphql');
+const decomp = new Decompiler('./mockup.schema.graphql');
+decomp.decompileSchema();
