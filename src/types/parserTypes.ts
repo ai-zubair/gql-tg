@@ -1,4 +1,4 @@
-import { ROOT_OP_NAMES, GQL_INPUT_TYPES, GQL_OUTPUT_TYPES, GQL_NAMED_TYPES } from './gqlTypes';
+import { ROOT_OP_NAMES } from './gqlTypes';
 
 /**
  * @type ExecutionRequestSignature =>
