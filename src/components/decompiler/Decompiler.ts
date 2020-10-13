@@ -1,8 +1,8 @@
-import { appendFileSync, writeFileSync } from "fs";
-import { request } from "http";
-import { createJSDocReturnTag } from "typescript";
+import { writeFileSync } from "fs";
 import { ExecutionRequestArg, ExecutionRequestReturn, GQLExecutionRequest, GQLschemaMap, GQLschemaParser } from "../../types";
+import { decompilationScalarTypeMap } from '../../constants';
 import { Parser } from "../parser/Parser";
+import { exec } from "child_process";
 
 class Decompiler {
   public schemaParser: GQLschemaParser;
@@ -34,11 +34,12 @@ class Decompiler {
       const decompiledExecReqArgs = this.formatIntoTypeDefinitionString(execReqArgLabel, decompiledArgTypes, "interface");
       return decompiledExecReqArgs;
     }
-    return "";
   }
 
   decompileExecReqArgument(execReqArg: ExecutionRequestArg): string{
-    
+    const mappedType = execReqArg.scalarTypeName ? decompilationScalarTypeMap[execReqArg.scalarTypeName] : execReqArg.nonScalarTypeName;
+    return execReqArg.isOptional ? `  ${execReqArg.argName}?: ${mappedType};\n` : `  ${execReqArg.argName}: ${mappedType};\n`;
+
   }
 
   decompileExecReqReturn(execReqReturn: ExecutionRequestReturn): string{

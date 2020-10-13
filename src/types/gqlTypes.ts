@@ -13,6 +13,14 @@ export enum GQL_NAMED_TYPES {
   UNION = "UNION"
 }
 
+export enum GQL_SCALAR_TYPES {
+  INT = 'Int',
+  FLOAT = 'Float',
+  ID = 'ID',
+  STRING = 'String',
+  BOOLEAN = 'Boolean',
+}
+
 export enum GQL_INPUT_TYPES {
   SCALAR = "SCALAR",
   ENUM = "ENUM",

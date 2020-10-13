@@ -9,3 +9,5 @@ test.json
 parsedSchema.json
 
 mockup.schema.grpahql
+
+definitions.ts
