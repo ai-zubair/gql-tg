@@ -1,4 +1,4 @@
-import { Decompiler } from './components/decompiler/Decompiler';
+import { Transpiler } from './components/transpiler/Transpiler';
 
-const decomp = new Decompiler('./mockup.schema.graphql');
-decomp.decompileSchema();
+const decomp = new Transpiler('./mockup.schema.graphql');
+decomp.transpileSchema();
