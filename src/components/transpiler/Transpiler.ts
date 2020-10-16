@@ -1,5 +1,5 @@
 import { appendFileSync, writeFileSync } from "fs";
-import { ExecutionRequestArg, ExecutionRequestReturn, GQLExecutionRequest, GQLschemaMap, GQLschemaParser, GQL_NAMED_TYPES, NonScalarType } from "../../types";
+import { ExecutionRequestArg, ExecutionRequestReturn, GQLExecutionRequest, GQLschemaMap, GQLschemaParser, GQL_NAMED_TYPES, NonScalarType, NonScalarTypeField, NonScalarTypeMap } from "../../types";
 import { transpiledScalarsMap } from '../../constants';
 import { Parser } from "../parser/Parser";
 
@@ -22,12 +22,12 @@ class Transpiler {
         this.writeToTranspiledSchema(transpiledExecutionRequest);
       });
     }
-    // writeFileSync('./definitions.ts',this.transpiledSchema);
+    writeFileSync('./definitions.ts',this.transpiledSchema);
   }
 
   writeToTranspiledSchema(transpiledDefinition: string){
     if(transpiledDefinition){
-      this.transpiledSchema.concat(transpiledDefinition);
+      this.transpiledSchema = this.transpiledSchema.concat(transpiledDefinition);
     }
   }
 
@@ -43,7 +43,7 @@ class Transpiler {
     }
   }
 
-  transpileParsedExecReqArgument(execReqArg: ExecutionRequestArg): string{
+  transpileParsedExecReqArgument = (execReqArg: ExecutionRequestArg): string =>{
     const nonScalarTypeName = execReqArg.nonScalarTypeName;
     const scalarTypeName = execReqArg.scalarTypeName;
     const mappedType = scalarTypeName ? transpiledScalarsMap[scalarTypeName] : nonScalarTypeName;
@@ -64,23 +64,27 @@ class Transpiler {
     let fieldDefinitions = '';
     if(isUnionOrEnumType){
       //handle accordingly
-    }else{
-      nonScalarType.typeFields.forEach( field =>{
-        if(field.fieldReturn.scalarTypeName){
-          fieldDefinitions += field.fieldReturn.isOptional ?  `  ${field.fieldLabel}?: ${transpiledScalarsMap[field.fieldReturn.scalarTypeName]};\n` : `  ${field.fieldLabel}: ${transpiledScalarsMap[field.fieldReturn.scalarTypeName]};\n`;
-
-        }else{
-          fieldDefinitions += field.fieldReturn.isOptional ?  `  ${field.fieldLabel}?: ${field.fieldReturn.nonScalarTypeName};\n` : `  ${field.fieldLabel}: ${field.fieldReturn.nonScalarTypeName};\n`;
-          const nonScalarType = this.parsedSchema.nonScalarTypes[field.fieldReturn.nonScalarTypeName];
-          const isNonScalarTypeDecompiled = this.transpiledNonScalars.has(nonScalarType);
-          isNonScalarTypeDecompiled ? null : this.transpileParsedNonScalar(nonScalarType);
-        }
-      });
+      return;
     }
+    const transpiledFieldList = nonScalarType.typeFields.map(this.transpileNonScalarField);
+    const transpiledFields = transpiledFieldList.join('');
+    const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, "INTERFACE");
     this.transpiledNonScalars.set(nonScalarType, true);
     Promise.resolve(1).then(()=>{
-      // appendFileSync('./definitions.ts',`\n export interface ${nonScalarType.typeLabel}{\n${fieldDefinitions}}`)
+      appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
     });
+  }
+
+  transpileNonScalarField = (field: NonScalarTypeField): string => {
+    const { fieldLabel, fieldReturn } = field;
+    const scalarReturnType = fieldReturn.scalarTypeName;
+    const nonScalarReturnType = fieldReturn.nonScalarTypeName;
+    const listWrappingType = fieldReturn.isList ? '[]' : '';
+    const mappedType = scalarReturnType ? `${transpiledScalarsMap[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
+    if(nonScalarReturnType && !this.isNonScalarTypeTranspiled(nonScalarReturnType)){
+      this.transpileParsedNonScalar(nonScalarReturnType);
+    }
+    return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldReturn.isOptional);
   }
 
   isNonScalarTypeTranspiled(nonScalarTypeName: string){
