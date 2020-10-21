@@ -14,13 +14,15 @@ import {
   GQLRootOperationMap,
   GQLRootOperation,
   GQLExecutionRequest,
-  ExecutionRequestArg,
+  GenericField,
   ArgTuple,
-  ExecutionRequestReturn,NonScalarTypeMap,
+  NonScalarTypeMap,
   NonScalarTypeField,
-  NonScalarFieldReturn,
   GQLschemaMap,
-  GQLschemaParser
+  GQLschemaParser,
+  GenericFieldType,
+  ExecRequestArg,
+  ExecRequestReturn
 } from '../../types';
 
 import { 
@@ -89,7 +91,7 @@ class Parser implements GQLschemaParser {
     return defTupleMap;
   }
 
-  private parseArgumentDefinition(argDefString: ERargumentDefinition): ExecutionRequestArg{
+  private parseArgumentDefinition(argDefString: ERargumentDefinition): ExecRequestArg{
     const argSplitPattern = new RegExp(ARG_SPLIT_PATTERN);
     const argTuple = argDefString.split(argSplitPattern) as ArgTuple;
     const argName = argTuple[0];
@@ -100,15 +102,17 @@ class Parser implements GQLschemaParser {
     const scalarTypeName = argType === GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType: undefined;
     const nonScalarTypeName = argType !== GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType : undefined;
     return {
-      argName,
-      argType,
-      scalarTypeName,
-      nonScalarTypeName,
-      isOptional
+      fieldLabel: argName,
+      fieldType: {
+        nativeType: argType,
+        scalarTypeName,
+        nonScalarTypeName,
+        isOptional
+      }
     }
   }
 
-  private parseReturnDefinition( execReqReturnString: ERreturnDefinition): ExecutionRequestReturn{
+  private parseReturnDefinition( execReqReturnString: ERreturnDefinition): ExecRequestReturn{
     const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(execReqReturnString);
     const isList = new RegExp(LIST_PATTERN).test(execReqReturnString);
     const isListValueOptional = isList ? new RegExp(LIST_VALUE_OPTIONAL_PATTERN).test(execReqReturnString): undefined;
@@ -118,7 +122,7 @@ class Parser implements GQLschemaParser {
     const scalarTypeName = returnType === GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     const nonScalarTypeName = returnType !== GQL_OUTPUT_TYPES.SCALAR ? returnDefWithoutWrapgType: undefined;
     return {
-      returnType,
+      nativeType: returnType,
       scalarTypeName,
       nonScalarTypeName,
       isOptional,
@@ -184,10 +188,10 @@ class Parser implements GQLschemaParser {
         const isEnumOrUnionType = typeName === GQL_NAMED_TYPES.ENUM || typeName === GQL_NAMED_TYPES.UNION;
         const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(':');
         const fieldLabel = fieldTuple[0];
-        const fieldReturn = isEnumOrUnionType ? undefined : this.parseReturnDefinition(fieldTuple[1]) as NonScalarFieldReturn;
+        const fieldReturn = isEnumOrUnionType ? undefined : this.parseReturnDefinition(fieldTuple[1]) as GenericFieldType;
         typeFields.push({
           fieldLabel,
-          fieldReturn
+          fieldType: fieldReturn
         })
       }
       nonScalarTypeMap[typeLabel] = {

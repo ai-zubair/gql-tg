@@ -1,5 +1,15 @@
 import { appendFileSync, writeFileSync } from "fs";
-import { ExecutionRequestArg, ExecutionRequestReturn, GQLExecutionRequest, GQLschemaMap, GQLschemaParser, GQL_NAMED_TYPES, NonScalarType, NonScalarTypeField, NonScalarTypeMap } from "../../types";
+import { 
+  ExecRequestArg,
+  GenericFieldType,
+  GQLExecutionRequest,
+  GQLschemaMap,
+  GQLschemaParser,
+  GQL_NAMED_TYPES,
+  NonScalarType,
+  NonScalarTypeField,
+  NonScalarTypeMap
+} from "../../types";
 import { transpiledScalarsMap } from '../../constants';
 import { Parser } from "../parser/Parser";
 
@@ -43,18 +53,18 @@ class Transpiler {
     }
   }
 
-  transpileParsedExecReqArgument = (execReqArg: ExecutionRequestArg): string =>{
-    const nonScalarTypeName = execReqArg.nonScalarTypeName;
-    const scalarTypeName = execReqArg.scalarTypeName;
+  transpileParsedExecReqArgument = (execReqArg: ExecRequestArg): string =>{
+    const nonScalarTypeName = execReqArg.fieldType.nonScalarTypeName;
+    const scalarTypeName = execReqArg.fieldType.scalarTypeName;
     const mappedType = scalarTypeName ? transpiledScalarsMap[scalarTypeName] : nonScalarTypeName;
     if(nonScalarTypeName && !this.isNonScalarTypeTranspiled(nonScalarTypeName)){
       this.transpileParsedNonScalar(nonScalarTypeName);
     }
-    return this.formatIntoTranspiledFieldDefinition(execReqArg.argName, mappedType, execReqArg.isOptional);
+    return this.formatIntoTranspiledFieldDefinition(execReqArg.fieldLabel, mappedType, execReqArg.fieldType.isOptional);
 
   }
 
-  transpileParsedExecReqReturn(execReqReturn: ExecutionRequestReturn): string{
+  transpileParsedExecReqReturn(execReqReturn: GenericFieldType): string{
     return "";
   }
 
@@ -89,15 +99,15 @@ class Transpiler {
   }
 
   transpileNonScalarField = (field: NonScalarTypeField): string => {
-    const { fieldLabel, fieldReturn } = field;
-    const scalarReturnType = fieldReturn.scalarTypeName;
-    const nonScalarReturnType = fieldReturn.nonScalarTypeName;
-    const listWrappingType = fieldReturn.isList ? '[]' : '';
+    const { fieldLabel, fieldType } = field;
+    const scalarReturnType = fieldType.scalarTypeName;
+    const nonScalarReturnType = fieldType.nonScalarTypeName;
+    const listWrappingType = fieldType.isList ? '[]' : '';
     const mappedType = scalarReturnType ? `${transpiledScalarsMap[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
     if(nonScalarReturnType && !this.isNonScalarTypeTranspiled(nonScalarReturnType)){
       this.transpileParsedNonScalar(nonScalarReturnType);
     }
-    return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldReturn.isOptional);
+    return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldType.isOptional);
   }
 
   isNonScalarTypeTranspiled(nonScalarTypeName: string){
