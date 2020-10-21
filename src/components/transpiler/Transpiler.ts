@@ -60,19 +60,32 @@ class Transpiler {
 
   transpileParsedNonScalar(nonScalarTypeName: string){
     const nonScalarType = this.parsedSchema.nonScalarTypes[nonScalarTypeName];
-    const isUnionOrEnumType = nonScalarType.typeName === GQL_NAMED_TYPES.ENUM || nonScalarType.typeName === GQL_NAMED_TYPES.UNION;
-    let fieldDefinitions = '';
-    if(isUnionOrEnumType){
-      //handle accordingly
-      return;
+    const isEnumType = nonScalarType.typeName === GQL_NAMED_TYPES.ENUM; 
+    const isUnionType = nonScalarType.typeName === GQL_NAMED_TYPES.UNION;
+    if(isEnumType){
+      const transpiledEnteryList = nonScalarType.typeFields.map( field => `  ${field.fieldLabel}\n`);
+      const transpiledEntries = transpiledEnteryList.join('');
+      const transpiledEnteryDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledEntries, "ENUM");
+      return Promise.resolve(1).then(()=>{
+        appendFileSync('./definitions.ts',`${transpiledEnteryDef}`)
+      });
     }
-    const transpiledFieldList = nonScalarType.typeFields.map(this.transpileNonScalarField);
-    const transpiledFields = transpiledFieldList.join('');
-    const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, "INTERFACE");
-    this.transpiledNonScalars.set(nonScalarType, true);
-    Promise.resolve(1).then(()=>{
-      appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
-    });
+    if(isUnionType){
+      const transpiledUnionList = nonScalarType.typeFields.map( field => ` ${field.fieldLabel} |`);
+      const transpiledUnion = transpiledUnionList.join('').replace(/\|$/,'');
+      const transpiledEnteryDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledUnion, "UNION");
+      return Promise.resolve(1).then(()=>{
+        appendFileSync('./definitions.ts',`${transpiledEnteryDef}`)
+      });
+    }else{
+      const transpiledFieldList = nonScalarType.typeFields.map(this.transpileNonScalarField);
+      const transpiledFields = transpiledFieldList.join('');
+      const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, "INTERFACE");
+      this.transpiledNonScalars.set(nonScalarType, true);
+      return Promise.resolve(1).then(()=>{
+        appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
+      });
+    }
   }
 
   transpileNonScalarField = (field: NonScalarTypeField): string => {
@@ -93,7 +106,14 @@ class Transpiler {
   }
 
   formatIntoTranspiledTypeDefinition(defLabel: string, defTypes: string, typeName: string): string{
-    return `\nexport ${typeName.toLowerCase()} ${defLabel}{\n${defTypes}}\n`;
+    switch(typeName){
+      case "INTERFACE":
+        return `\nexport ${typeName.toLowerCase()} ${defLabel}{\n${defTypes}}\n`;
+      case "ENUM":
+        return `\nexport ${typeName.toLowerCase()} ${defLabel}{\n${defTypes}}\n`;
+      case "UNION":
+        return `\nexport type ${defLabel} = ${defTypes}`;    
+    }
   }
 
   formatIntoTranspiledFieldDefinition(fieldName: string, fieldType: string, isOptional: boolean): string{
