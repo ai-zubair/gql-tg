@@ -1,6 +1,5 @@
 import { appendFileSync, writeFileSync } from "fs";
-import { 
-  ExecRequestArg,
+import {
   GenericField,
   GenericFieldType,
   GQLExecutionRequest,
@@ -11,18 +10,28 @@ import {
   NonScalarType,
   NonScalarTypeField
 } from "../../types";
+
 import { 
-  transpiledScalarsMap,
-  transpiledNonScalarsMap,
-  MappedNonScalars
+  TRANSPILED_SCALARS_MAP,
+  TRANSPILED_NON_SCALARS_MAP,
+  MAPPED_NON_SCALARS,
+  INTRO_TEXT,
+  ARG_SUFFIX,
+  LIST_SUFFIX,
+  INDENT_SPACE,
+  EXPORT,
+  NEW_LINE,
+  UNION_BAR
 } from '../../constants';
+
+import { CAMEL_CASE_PATTERN, FIRST_LETTER_PATTERN, UNION_BAR_PATTERN } from '../../patterns';
 import { Parser } from "../parser/Parser";
 
 class Transpiler {
   private parsedSchema: GQLschemaMap;
   private transpiledNonScalars: Map<NonScalarType, Boolean> = new Map();
   public schemaParser: GQLschemaParser;
-  private transpiledSchema: string = `/* Auto-Generated Typed Defintions via GQL-TYPE-GEN @ ${new Date()}*/`;
+  private transpiledSchema: string = INTRO_TEXT;
 
   constructor(schemaURL: string, customParser?:GQLschemaParser) {
     this.schemaParser = customParser || new Parser(schemaURL);
@@ -48,10 +57,10 @@ class Transpiler {
 
   transpileParsedExecutionRequest(executionRequest: GQLExecutionRequest, rootOperationName: string): string{
     if(executionRequest.requestArgs > 0){
-      const transpiledReqArgsLabel = this.joinIntoCamelCase(executionRequest.requestName, rootOperationName, "ARGS");
+      const transpiledReqArgsLabel = this.joinIntoCamelCase(executionRequest.requestName, rootOperationName, ARG_SUFFIX);
       const transpiledArgList = executionRequest.requestArgDefs.map(this.transpileGenericField);
       const transpiledArgs = transpiledArgList.join('');
-      const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, MappedNonScalars.INTERFACE);
+      const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, MAPPED_NON_SCALARS.INTERFACE);
       return transpiledArgDef;
     }else{
       return "";
@@ -62,8 +71,8 @@ class Transpiler {
     const { fieldLabel, fieldType } = field;
     const scalarReturnType = fieldType.scalarTypeName;
     const nonScalarReturnType = fieldType.nonScalarTypeName;
-    const listWrappingType = fieldType.isList ? '[]' : '';
-    const mappedType = scalarReturnType ? `${transpiledScalarsMap[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
+    const listWrappingType = fieldType.isList ? LIST_SUFFIX : '';
+    const mappedType = scalarReturnType ? `${TRANSPILED_SCALARS_MAP[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
     if(nonScalarReturnType && !this.isNonScalarTypeTranspiled(nonScalarReturnType)){
       this.transpileParsedNonScalar(nonScalarReturnType);
     }
@@ -71,15 +80,16 @@ class Transpiler {
   }
 
   transpileParsedExecReqReturn(execReqReturn: GenericFieldType): string{
-    return "";
+    return ""
   }
 
   transpileParsedNonScalar(nonScalarTypeName: string){
     const nonScalarType = this.parsedSchema.nonScalarTypes[nonScalarTypeName];
     const nonScalarFieldTranspiler = this.nonScalarFieldTranspilerFactory(nonScalarType.nativeType);
-    const mappedNonScalarType = transpiledNonScalarsMap[nonScalarType.nativeType];
+    const mappedNonScalarType = TRANSPILED_NON_SCALARS_MAP[nonScalarType.nativeType];
     const transpiledFieldList = nonScalarType.typeFields.map(nonScalarFieldTranspiler);
-    const transpiledFields = transpiledFieldList.join('').replace(/\|$/,'');
+    const terminalBarPattern =  new RegExp(UNION_BAR_PATTERN);
+    const transpiledFields = transpiledFieldList.join('').replace(terminalBarPattern,'');
     const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, mappedNonScalarType);
     this.transpiledNonScalars.set(nonScalarType, true);
     return Promise.resolve().then(()=>{
@@ -90,9 +100,9 @@ class Transpiler {
   nonScalarFieldTranspilerFactory(nativeTypeName: string): NonScalarFieldTranspiler{
     switch(nativeTypeName){
       case GQL_NAMED_TYPES.ENUM:
-        return (field: NonScalarTypeField)=>`  ${field.fieldLabel}\n`;
+        return (field: NonScalarTypeField)=>`${INDENT_SPACE}${field.fieldLabel}${NEW_LINE}`;
       case GQL_NAMED_TYPES.UNION:
-        return (field: NonScalarTypeField)=>`  ${field.fieldLabel} |`;
+        return (field: NonScalarTypeField)=>`${INDENT_SPACE}${field.fieldLabel} ${UNION_BAR}`;
       default:
         return this.transpileGenericField;
     }
@@ -105,28 +115,29 @@ class Transpiler {
 
   formatIntoTranspiledTypeDefinition(defLabel: string, defTypes: string, typeName: string): string{
     switch(typeName){
-      case MappedNonScalars.TYPE:
-        return `\nexport ${typeName} ${defLabel} = ${defTypes}`;    
+      case MAPPED_NON_SCALARS.TYPE:
+        return `${NEW_LINE}${EXPORT} ${typeName} ${defLabel} = ${defTypes}`;    
       default:
-        return `\nexport ${typeName} ${defLabel}{\n${defTypes}}\n`;
+        return `${NEW_LINE}${EXPORT} ${typeName} ${defLabel}{${NEW_LINE}${defTypes}}${NEW_LINE}`;
     }
   }
 
   formatIntoTranspiledFieldDefinition(fieldName: string, fieldType: string, isOptional: boolean): string{
-    return isOptional ? `  ${fieldName}?: ${fieldType};\n` : `  ${fieldName}: ${fieldType};\n`;
+    return isOptional ? `${INDENT_SPACE}${fieldName}?: ${fieldType};${NEW_LINE}` : `${INDENT_SPACE}${fieldName}: ${fieldType};${NEW_LINE}`;
   }
 
   joinIntoCamelCase(...str: string[]): string {
     const titleCasedStrings = str.map((str: string):string => {
       const lowerCasedString = this.hasCamelCasing(str) ? str : str.toLowerCase();
-      const camedlCasedString = lowerCasedString.replace(/^\w/,str[0].toUpperCase());
+      const firstLetterPattern = new RegExp(FIRST_LETTER_PATTERN);
+      const camedlCasedString = lowerCasedString.replace(firstLetterPattern,str[0].toUpperCase());
       return camedlCasedString;
     });
     return titleCasedStrings.join('');
   }
 
   hasCamelCasing(str: string): boolean{
-    const camelCasePattern = new RegExp('(?<=[a-z])[A-Z]');
+    const camelCasePattern = new RegExp(CAMEL_CASE_PATTERN);
     return camelCasePattern.test(str);
   }
 }

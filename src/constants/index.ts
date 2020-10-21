@@ -1,3 +1,3 @@
 export * from './tokenizerConstants';
 export * from './parserConstants';
-export * from './decompilerConstants';
+export * from './transpilerConstants';
