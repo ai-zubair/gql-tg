@@ -46,7 +46,7 @@ export interface NonScalarTypeMap {
 }
 
 export interface NonScalarType {
-  typeName: GQL_NAMED_TYPES;
+  nativeType: GQL_NAMED_TYPES;
   typeLabel: string;
   typeFields?: NonScalarTypeField[]
 }
@@ -62,4 +62,8 @@ export interface GQLschemaMap {
 
 export interface GQLschemaParser{
   parsedSchema: GQLschemaMap;
+}
+
+export interface NonScalarFieldTranspiler{
+  (field: NonScalarTypeField): string;
 }

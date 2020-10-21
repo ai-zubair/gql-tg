@@ -181,11 +181,11 @@ class Parser implements GQLschemaParser {
     const nonScalarTypeMap: NonScalarTypeMap = {};
     this.tokenizer.nonScalarTypeDefinitions.forEach( (nonScalarTypeDef: TokenizedTypeDefinition) => {
       const nonScalarTypeDefTuple = nonScalarTypeDef.split(this.tokenizer.parsingDelimiter);
-      const typeName = nonScalarTypeDefTuple[0].toUpperCase() as GQL_NAMED_TYPES;
+      const nativeType = nonScalarTypeDefTuple[0].toUpperCase() as GQL_NAMED_TYPES;
       const typeLabel = nonScalarTypeDefTuple[1];
       const typeFields = nonScalarTypeDefTuple.length > 2 ? [] as NonScalarTypeField[] : undefined;
       for (let typeFieldIndex = 2; typeFieldIndex < nonScalarTypeDefTuple.length; typeFieldIndex++) {
-        const isEnumOrUnionType = typeName === GQL_NAMED_TYPES.ENUM || typeName === GQL_NAMED_TYPES.UNION;
+        const isEnumOrUnionType = nativeType === GQL_NAMED_TYPES.ENUM || nativeType === GQL_NAMED_TYPES.UNION;
         const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(':');
         const fieldLabel = fieldTuple[0];
         const fieldReturn = isEnumOrUnionType ? undefined : this.parseReturnDefinition(fieldTuple[1]) as GenericFieldType;
@@ -195,7 +195,7 @@ class Parser implements GQLschemaParser {
         })
       }
       nonScalarTypeMap[typeLabel] = {
-        typeName,
+        nativeType,
         typeLabel,
         typeFields
       }
