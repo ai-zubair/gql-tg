@@ -15,24 +15,29 @@ export interface GQLRootOperation {
 export interface GQLExecutionRequest{
   requestName: string;
   requestArgs: number;
-  requestArgDefs: ExecutionRequestArg[]
-  requestReturn: ExecutionRequestReturn
+  requestArgDefs: ExecRequestArg[];
+  requestReturn: ExecRequestReturn;
 }
 
-export interface ExecutionRequestArg {
-  argName: string;
-  argType: GQL_INPUT_TYPES;
+export interface ExecRequestArg extends GenericField{
+
+}
+
+export interface ExecRequestReturn extends GenericFieldType{
+
+}
+
+export interface GenericField{
+  fieldLabel: string;
+  fieldType: GenericFieldType;
+}
+
+export interface GenericFieldType{
+  nativeType: GQL_INPUT_TYPES | GQL_OUTPUT_TYPES | GQL_NAMED_TYPES;
   scalarTypeName?: string;
   nonScalarTypeName?: string;
   isOptional: boolean;
-}
-
-export interface ExecutionRequestReturn {
-  returnType: GQL_OUTPUT_TYPES;
-  scalarTypeName?: string;
-  nonScalarTypeName?: string;
-  isOptional: boolean;
-  isList: boolean;
+  isList?: boolean;
   isListValueOptional?: boolean; 
 }
 
@@ -41,18 +46,13 @@ export interface NonScalarTypeMap {
 }
 
 export interface NonScalarType {
-  typeName: GQL_NAMED_TYPES;
+  nativeType: GQL_NAMED_TYPES;
   typeLabel: string;
   typeFields?: NonScalarTypeField[]
 }
 
-export interface NonScalarTypeField {
-  fieldLabel: string;
-  fieldReturn?: NonScalarFieldReturn ;
-}
+export interface NonScalarTypeField extends GenericField{
 
-export interface NonScalarFieldReturn extends ExecutionRequestReturn{
- 
 }
 
 export interface GQLschemaMap {
@@ -62,4 +62,8 @@ export interface GQLschemaMap {
 
 export interface GQLschemaParser{
   parsedSchema: GQLschemaMap;
+}
+
+export interface NonScalarFieldTranspiler{
+  (field: NonScalarTypeField): string;
 }

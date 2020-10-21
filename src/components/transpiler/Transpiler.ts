@@ -1,6 +1,21 @@
 import { appendFileSync, writeFileSync } from "fs";
-import { ExecutionRequestArg, ExecutionRequestReturn, GQLExecutionRequest, GQLschemaMap, GQLschemaParser, GQL_NAMED_TYPES, NonScalarType, NonScalarTypeField, NonScalarTypeMap } from "../../types";
-import { transpiledScalarsMap } from '../../constants';
+import { 
+  ExecRequestArg,
+  GenericField,
+  GenericFieldType,
+  GQLExecutionRequest,
+  GQLschemaMap,
+  GQLschemaParser,
+  GQL_NAMED_TYPES,
+  NonScalarFieldTranspiler,
+  NonScalarType,
+  NonScalarTypeField
+} from "../../types";
+import { 
+  transpiledScalarsMap,
+  transpiledNonScalarsMap,
+  MappedNonScalars
+} from '../../constants';
 import { Parser } from "../parser/Parser";
 
 class Transpiler {
@@ -34,70 +49,53 @@ class Transpiler {
   transpileParsedExecutionRequest(executionRequest: GQLExecutionRequest, rootOperationName: string): string{
     if(executionRequest.requestArgs > 0){
       const transpiledReqArgsLabel = this.joinIntoCamelCase(executionRequest.requestName, rootOperationName, "ARGS");
-      const transpiledArgList = executionRequest.requestArgDefs.map(this.transpileParsedExecReqArgument);
+      const transpiledArgList = executionRequest.requestArgDefs.map(this.transpileGenericField);
       const transpiledArgs = transpiledArgList.join('');
-      const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, "INTERFACE");
+      const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, MappedNonScalars.INTERFACE);
       return transpiledArgDef;
     }else{
       return "";
     }
   }
 
-  transpileParsedExecReqArgument = (execReqArg: ExecutionRequestArg): string =>{
-    const nonScalarTypeName = execReqArg.nonScalarTypeName;
-    const scalarTypeName = execReqArg.scalarTypeName;
-    const mappedType = scalarTypeName ? transpiledScalarsMap[scalarTypeName] : nonScalarTypeName;
-    if(nonScalarTypeName && !this.isNonScalarTypeTranspiled(nonScalarTypeName)){
-      this.transpileParsedNonScalar(nonScalarTypeName);
+  transpileGenericField = (field: GenericField): string => {
+    const { fieldLabel, fieldType } = field;
+    const scalarReturnType = fieldType.scalarTypeName;
+    const nonScalarReturnType = fieldType.nonScalarTypeName;
+    const listWrappingType = fieldType.isList ? '[]' : '';
+    const mappedType = scalarReturnType ? `${transpiledScalarsMap[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
+    if(nonScalarReturnType && !this.isNonScalarTypeTranspiled(nonScalarReturnType)){
+      this.transpileParsedNonScalar(nonScalarReturnType);
     }
-    return this.formatIntoTranspiledFieldDefinition(execReqArg.argName, mappedType, execReqArg.isOptional);
-
+    return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldType.isOptional);
   }
 
-  transpileParsedExecReqReturn(execReqReturn: ExecutionRequestReturn): string{
+  transpileParsedExecReqReturn(execReqReturn: GenericFieldType): string{
     return "";
   }
 
   transpileParsedNonScalar(nonScalarTypeName: string){
     const nonScalarType = this.parsedSchema.nonScalarTypes[nonScalarTypeName];
-    const isEnumType = nonScalarType.typeName === GQL_NAMED_TYPES.ENUM; 
-    const isUnionType = nonScalarType.typeName === GQL_NAMED_TYPES.UNION;
-    if(isEnumType){
-      const transpiledEnteryList = nonScalarType.typeFields.map( field => `  ${field.fieldLabel}\n`);
-      const transpiledEntries = transpiledEnteryList.join('');
-      const transpiledEnteryDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledEntries, "ENUM");
-      return Promise.resolve(1).then(()=>{
-        appendFileSync('./definitions.ts',`${transpiledEnteryDef}`)
-      });
-    }
-    if(isUnionType){
-      const transpiledUnionList = nonScalarType.typeFields.map( field => ` ${field.fieldLabel} |`);
-      const transpiledUnion = transpiledUnionList.join('').replace(/\|$/,'');
-      const transpiledEnteryDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledUnion, "UNION");
-      return Promise.resolve(1).then(()=>{
-        appendFileSync('./definitions.ts',`${transpiledEnteryDef}`)
-      });
-    }else{
-      const transpiledFieldList = nonScalarType.typeFields.map(this.transpileNonScalarField);
-      const transpiledFields = transpiledFieldList.join('');
-      const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, "INTERFACE");
-      this.transpiledNonScalars.set(nonScalarType, true);
-      return Promise.resolve(1).then(()=>{
-        appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
-      });
-    }
+    const nonScalarFieldTranspiler = this.nonScalarFieldTranspilerFactory(nonScalarType.nativeType);
+    const mappedNonScalarType = transpiledNonScalarsMap[nonScalarType.nativeType];
+    const transpiledFieldList = nonScalarType.typeFields.map(nonScalarFieldTranspiler);
+    const transpiledFields = transpiledFieldList.join('').replace(/\|$/,'');
+    const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, mappedNonScalarType);
+    this.transpiledNonScalars.set(nonScalarType, true);
+    return Promise.resolve().then(()=>{
+      appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
+    });
   }
 
-  transpileNonScalarField = (field: NonScalarTypeField): string => {
-    const { fieldLabel, fieldReturn } = field;
-    const scalarReturnType = fieldReturn.scalarTypeName;
-    const nonScalarReturnType = fieldReturn.nonScalarTypeName;
-    const listWrappingType = fieldReturn.isList ? '[]' : '';
-    const mappedType = scalarReturnType ? `${transpiledScalarsMap[scalarReturnType]}${listWrappingType}` : `${nonScalarReturnType}${listWrappingType}`;
-    if(nonScalarReturnType && !this.isNonScalarTypeTranspiled(nonScalarReturnType)){
-      this.transpileParsedNonScalar(nonScalarReturnType);
+  nonScalarFieldTranspilerFactory(nativeTypeName: string): NonScalarFieldTranspiler{
+    switch(nativeTypeName){
+      case GQL_NAMED_TYPES.ENUM:
+        return (field: NonScalarTypeField)=>`  ${field.fieldLabel}\n`;
+      case GQL_NAMED_TYPES.UNION:
+        return (field: NonScalarTypeField)=>`  ${field.fieldLabel} |`;
+      default:
+        return this.transpileGenericField;
     }
-    return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldReturn.isOptional);
   }
 
   isNonScalarTypeTranspiled(nonScalarTypeName: string){
@@ -107,12 +105,10 @@ class Transpiler {
 
   formatIntoTranspiledTypeDefinition(defLabel: string, defTypes: string, typeName: string): string{
     switch(typeName){
-      case "INTERFACE":
-        return `\nexport ${typeName.toLowerCase()} ${defLabel}{\n${defTypes}}\n`;
-      case "ENUM":
-        return `\nexport ${typeName.toLowerCase()} ${defLabel}{\n${defTypes}}\n`;
-      case "UNION":
-        return `\nexport type ${defLabel} = ${defTypes}`;    
+      case MappedNonScalars.TYPE:
+        return `\nexport ${typeName} ${defLabel} = ${defTypes}`;    
+      default:
+        return `\nexport ${typeName} ${defLabel}{\n${defTypes}}\n`;
     }
   }
 
