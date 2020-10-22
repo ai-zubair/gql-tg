@@ -1,5 +1,5 @@
 {
-  "name": "GQL-TYPEGEN",
+  "name": "gql-tg",
   "version": "1.0.0",
   "description": "Automatically generate TS type definitions for the GQL resolvers.",
   "main": "build/index.js",
@@ -14,8 +14,8 @@
     "start": "concurrently npm:start:*"
   },
   "keywords": ["graphql","typescript","type definitions","nodejs","cli"],
-  "repository": "https://github.com/ai-zubair/gql-type-gen",
-  "homepage": "https://github.com/ai-zubair/gql-type-gen#readme",
+  "repository": "https://github.com/ai-zubair/gql-tg",
+  "homepage": "https://github.com/ai-zubair/gql-tg#readme",
   "author": "Zubair Bashir",
   "license": "ISC",
   "devDependencies": {

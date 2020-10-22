@@ -1,7 +1,5 @@
 .vscode
 
-build
-
 node_modules
 
 definitions.ts
@@ -9,3 +7,7 @@ definitions.ts
 mockup.schema.graphql
 
 parsedSchema.json
+
+src/
+
+build/types/

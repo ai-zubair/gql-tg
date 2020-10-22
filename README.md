@@ -3,10 +3,10 @@ Type defintions are awesome. Which is why we love Typescript. Our love for **Gra
 
 ***Custom writing the type defintions for arguments and return values of the GraphQL resolvers***.
 
-Ta-Da! Wait no more! **gql-type-gen** brings static typings into your typescript resolvers for the Graph QL operations.
+Ta-Da! Wait no more! **gql-tg** brings static typings into your typescript resolvers for the Graph QL operations.
 
 ## How?
-**gql-type-gen** reads the graphql schema file located in the command's execution directory(pwd) and recursively goes through all the GraphQL operations found in the schema file, generating the corresponding type definitions both for the operations' resolver arguments as well as the return value. 
+**gql-tg** reads the graphql schema file located in the command's execution directory(pwd) and recursively goes through all the GraphQL operations found in the schema file, generating the corresponding type definitions both for the operations' resolver arguments as well as the return value. 
 
 ***NOTE: types in the schema.graphql file that do not appear in any of the GQL operations, neither as an operation argument nor as the return type are not written ot the output file.***
 
@@ -14,7 +14,7 @@ Ta-Da! Wait no more! **gql-type-gen** brings static typings into your typescript
 To get the CLI:
 
 ```
-npm i --save-dev gql-type-gen
+npm i --save-dev gql-tg
 ```
 
 The installed CLI exposes the **typegen** command which generates the type definitions by synchronously writing to a file located in command's execution directory(pwd). As of now, in the current version no CLI options are supported. 
@@ -36,7 +36,7 @@ e.g. If the **schema.grpahql** file is located in the project root, to get the t
 ## Contribute
 
 To get started:
-1. Clone the repo onto your local machine. `git clone https://github.com/ai-zubair/gql-type-gen.git`
+1. Clone the repo onto your local machine. `git clone https://github.com/ai-zubair/gql-tg.git`
 2. Install the dependencies(mainly developmental) `npm i` 
 3. Build the project `npm start`
 4. The source files are read from `src` directory and the build files are written to the `build` directory, both in the project root. This can be changed in `tsconfig.json`.
