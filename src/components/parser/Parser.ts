@@ -1,4 +1,3 @@
-import { writeFileSync } from 'fs';
 import { 
   ROOT_OP_NAMES, 
   GQL_INPUT_TYPES, 
@@ -14,7 +13,6 @@ import {
   GQLRootOperationMap,
   GQLRootOperation,
   GQLExecutionRequest,
-  GenericField,
   ArgTuple,
   NonScalarTypeMap,
   NonScalarTypeField,
@@ -206,7 +204,6 @@ class Parser implements GQLschemaParser {
   private parseSchema(): GQLschemaMap {
     const rootOperations = this.parseRootOperations();
     const nonScalarTypes = this.parseNonScalarTypeDefinitions();
-    writeFileSync('./parsedSchema.json', JSON.stringify({rootOperations, nonScalarTypes}, undefined, 2));
     return{
       rootOperations,
       nonScalarTypes
