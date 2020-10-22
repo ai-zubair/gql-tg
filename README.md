@@ -1,12 +1,16 @@
-# Why?
+## Why?
 Type defintions are awesome. Which is why we love Typescript. Our love for **GraphQL** is endless for the ease and scalability it brings to our application servers. Here's the pain though:  
-***Custom writing the type defintions for arguments and return values of the GraphQL resolvers***. 
-Ta-Da! Wait no more! **gql-type-gen** brings static typings into your typescript resolvers for the Graph QL operations' resolvers.
 
-# How?
-**gql-type-gen** reads the graphql schema file located in the command's execution directory and recursively goes through all the GraphQL operations found in the schema file, generating type definitions both for the operations' resolver arguments as well as the return value. 
+`***Custom writing the type defintions for arguments and return values of the GraphQL resolvers***.`
 
-# CLI
+Ta-Da! Wait no more! **gql-type-gen** brings static typings into your typescript resolvers for the Graph QL operations.
+
+## How?
+**gql-type-gen** reads the graphql schema file located in the command's execution directory(pwd) and recursively goes through all the GraphQL operations found in the schema file, generating the corresponding type definitions both for the operations' resolver arguments as well as the return value. 
+
+***NOTE: types in the schema.graphql file that do not appear in any of the GQL operations, neither as an operation argument nor as the return type are not written ot the output file.***
+
+## CLI
 To get the CLI:
 
 ```
@@ -24,12 +28,12 @@ The installed CLI exposes the **typegen** command which generates the type defin
 e.g. If the **schema.grpahql** file is located in the project root, to get the type definitions generated in the same directory: 
 
 ```
-  ~/path/to/project-root$ typegen
+~/path/to/project-root$ typegen
 ```
 
 ***NOTE: Support for custom input schema file path, output type definitions file path and output definitions file name is coming soon!***
 
-# Contribute
+## Contribute
 
 To get started:
 1. Clone the repo onto your local machine. `git clone https://github.com/ai-zubair/gql-type-gen.git`
