@@ -1,7 +1,7 @@
 ## Why?
 Type defintions are awesome. Which is why we love Typescript. Our love for **GraphQL** is endless for the ease and scalability it brings to our application servers. Here's the pain though:  
 
-`***Custom writing the type defintions for arguments and return values of the GraphQL resolvers***.`
+***Custom writing the type defintions for arguments and return values of the GraphQL resolvers***.
 
 Ta-Da! Wait no more! **gql-type-gen** brings static typings into your typescript resolvers for the Graph QL operations.
 
