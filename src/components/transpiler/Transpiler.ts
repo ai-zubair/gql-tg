@@ -1,7 +1,7 @@
 import { appendFileSync, writeFileSync } from "fs";
 import {
+  ExecRequestArg,
   GenericField,
-  GenericFieldType,
   GQLExecutionRequest,
   GQLschemaMap,
   GQLschemaParser,
@@ -24,7 +24,12 @@ import {
   UNION_BAR
 } from '../../constants';
 
-import { CAMEL_CASE_PATTERN, FIRST_LETTER_PATTERN, UNION_BAR_PATTERN } from '../../patterns';
+import { 
+  CAMEL_CASE_PATTERN, 
+  FIRST_LETTER_PATTERN, 
+  UNION_BAR_PATTERN 
+} from '../../patterns';
+
 import { Parser } from "../parser/Parser";
 
 class Transpiler {
@@ -49,25 +54,31 @@ class Transpiler {
     writeFileSync('./definitions.ts',this.transpiledSchema);
   }
 
-  writeToTranspiledSchema(transpiledDefinition: string){
+  private writeToTranspiledSchema(transpiledDefinition: string){
     if(transpiledDefinition){
       this.transpiledSchema = this.transpiledSchema.concat(transpiledDefinition);
     }
   }
 
-  transpileParsedExecutionRequest(executionRequest: GQLExecutionRequest, rootOperationName: string): string{
+  private transpileParsedExecutionRequest(executionRequest: GQLExecutionRequest, rootOperationName: string): string{
+    const nonScalarReturn = executionRequest.requestReturn.nonScalarTypeName;
+    if(nonScalarReturn && !this.isNonScalarTypeTranspiled(nonScalarReturn)){
+      this.transpileParsedNonScalar(executionRequest.requestReturn.nonScalarTypeName);
+    }
     if(executionRequest.requestArgs > 0){
       const transpiledReqArgsLabel = this.joinIntoCamelCase(executionRequest.requestName, rootOperationName, ARG_SUFFIX);
-      const transpiledArgList = executionRequest.requestArgDefs.map(this.transpileGenericField);
-      const transpiledArgs = transpiledArgList.join('');
-      const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, MAPPED_NON_SCALARS.INTERFACE);
-      return transpiledArgDef;
-    }else{
-      return "";
+      return this.transpileParsedExecReqArg(executionRequest.requestArgDefs, transpiledReqArgsLabel);
     }
   }
 
-  transpileGenericField = (field: GenericField): string => {
+  private transpileParsedExecReqArg(execReqArgs: ExecRequestArg[], transpiledReqArgsLabel: string): string{
+    const transpiledArgList = execReqArgs.map(this.transpileGenericField);
+    const transpiledArgs = transpiledArgList.join('');
+    const transpiledArgDef = this.formatIntoTranspiledTypeDefinition(transpiledReqArgsLabel, transpiledArgs, MAPPED_NON_SCALARS.INTERFACE);
+    return transpiledArgDef;
+  }
+
+  private transpileGenericField = (field: GenericField): string => {
     const { fieldLabel, fieldType } = field;
     const scalarReturnType = fieldType.scalarTypeName;
     const nonScalarReturnType = fieldType.nonScalarTypeName;
@@ -79,28 +90,24 @@ class Transpiler {
     return this.formatIntoTranspiledFieldDefinition(fieldLabel, mappedType, fieldType.isOptional);
   }
 
-  transpileParsedExecReqReturn(execReqReturn: GenericFieldType): string{
-    return ""
-  }
-
-  transpileParsedNonScalar(nonScalarTypeName: string){
+  private transpileParsedNonScalar(nonScalarTypeName: string){
     const nonScalarType = this.parsedSchema.nonScalarTypes[nonScalarTypeName];
+    this.transpiledNonScalars.set(nonScalarType, true);
     const nonScalarFieldTranspiler = this.nonScalarFieldTranspilerFactory(nonScalarType.nativeType);
     const mappedNonScalarType = TRANSPILED_NON_SCALARS_MAP[nonScalarType.nativeType];
     const transpiledFieldList = nonScalarType.typeFields.map(nonScalarFieldTranspiler);
     const terminalBarPattern =  new RegExp(UNION_BAR_PATTERN);
     const transpiledFields = transpiledFieldList.join('').replace(terminalBarPattern,'');
     const transpiledFieldDef = this.formatIntoTranspiledTypeDefinition(nonScalarTypeName, transpiledFields, mappedNonScalarType);
-    this.transpiledNonScalars.set(nonScalarType, true);
     return Promise.resolve().then(()=>{
-      appendFileSync('./definitions.ts',`${transpiledFieldDef}`)
+      appendFileSync('./definitions.ts',`${transpiledFieldDef}`);
     });
   }
 
-  nonScalarFieldTranspilerFactory(nativeTypeName: string): NonScalarFieldTranspiler{
+  private nonScalarFieldTranspilerFactory(nativeTypeName: string): NonScalarFieldTranspiler{
     switch(nativeTypeName){
       case GQL_NAMED_TYPES.ENUM:
-        return (field: NonScalarTypeField)=>`${INDENT_SPACE}${field.fieldLabel}${NEW_LINE}`;
+        return (field: NonScalarTypeField)=>`${INDENT_SPACE}${field.fieldLabel} = \'${field.fieldLabel}\',${NEW_LINE}`;
       case GQL_NAMED_TYPES.UNION:
         return (field: NonScalarTypeField)=>`${INDENT_SPACE}${field.fieldLabel} ${UNION_BAR}`;
       default:
@@ -108,25 +115,25 @@ class Transpiler {
     }
   }
 
-  isNonScalarTypeTranspiled(nonScalarTypeName: string){
+  private isNonScalarTypeTranspiled(nonScalarTypeName: string){
     const nonScalarType = this.parsedSchema.nonScalarTypes[nonScalarTypeName];
     return this.transpiledNonScalars.has(nonScalarType);
   }
 
-  formatIntoTranspiledTypeDefinition(defLabel: string, defTypes: string, typeName: string): string{
+  private formatIntoTranspiledTypeDefinition(defLabel: string, defTypes: string, typeName: string): string{
     switch(typeName){
       case MAPPED_NON_SCALARS.TYPE:
-        return `${NEW_LINE}${EXPORT} ${typeName} ${defLabel} = ${defTypes}`;    
+        return `${NEW_LINE}${EXPORT} ${typeName} ${defLabel} = ${defTypes};${NEW_LINE}`;    
       default:
         return `${NEW_LINE}${EXPORT} ${typeName} ${defLabel}{${NEW_LINE}${defTypes}}${NEW_LINE}`;
     }
   }
 
-  formatIntoTranspiledFieldDefinition(fieldName: string, fieldType: string, isOptional: boolean): string{
+  private formatIntoTranspiledFieldDefinition(fieldName: string, fieldType: string, isOptional: boolean): string{
     return isOptional ? `${INDENT_SPACE}${fieldName}?: ${fieldType};${NEW_LINE}` : `${INDENT_SPACE}${fieldName}: ${fieldType};${NEW_LINE}`;
   }
 
-  joinIntoCamelCase(...str: string[]): string {
+  private joinIntoCamelCase(...str: string[]): string {
     const titleCasedStrings = str.map((str: string):string => {
       const lowerCasedString = this.hasCamelCasing(str) ? str : str.toLowerCase();
       const firstLetterPattern = new RegExp(FIRST_LETTER_PATTERN);
@@ -136,7 +143,7 @@ class Transpiler {
     return titleCasedStrings.join('');
   }
 
-  hasCamelCasing(str: string): boolean{
+  private hasCamelCasing(str: string): boolean{
     const camelCasePattern = new RegExp(CAMEL_CASE_PATTERN);
     return camelCasePattern.test(str);
   }
