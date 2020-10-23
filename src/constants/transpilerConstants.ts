@@ -24,7 +24,7 @@ export enum MAPPED_NON_SCALARS {
 
 export const INTRO_TEXT =
 `/*
-* Type Defintions automatically generated via GQL-TYPE-GEN at ${new Date().toLocaleString()}.
+* Type Definitions automatically generated via gql-tg at ${new Date().toLocaleString()}.
 * Do not change this file directly as the changes would be overwritten.
 * Change the source GraphQL Schema File instead.
 */`;
