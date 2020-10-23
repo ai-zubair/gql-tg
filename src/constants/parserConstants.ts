@@ -1,6 +1,6 @@
 import { GQL_NAMED_TYPES } from '../types';
 
-export const scalarTypeMap = {
+export const SCALAR_TYPE_MAP = {
   "String": GQL_NAMED_TYPES.SCALAR, 
   "ID": GQL_NAMED_TYPES.SCALAR, 
   "Int": GQL_NAMED_TYPES.SCALAR, 

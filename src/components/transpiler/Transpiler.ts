@@ -35,15 +35,15 @@ import { Parser } from "../parser/Parser";
 class Transpiler {
   private parsedSchema: GQLschemaMap;
   private transpiledNonScalars: Map<NonScalarType, Boolean> = new Map();
-  public schemaParser: GQLschemaParser;
   private transpiledSchema: string = INTRO_TEXT;
+  public schemaParser: GQLschemaParser;
 
   constructor(schemaURL: string, customParser?:GQLschemaParser) {
     this.schemaParser = customParser || new Parser(schemaURL);
     this.parsedSchema = this.schemaParser.parsedSchema;
   }
 
-  transpileSchema(){
+  public transpileSchema(){
     for (const rootOperationName in this.parsedSchema.rootOperations) {
       const rootOperation = this.parsedSchema.rootOperations[rootOperationName];
       rootOperation.permittedRequests.forEach((executionRequest: GQLExecutionRequest)=>{

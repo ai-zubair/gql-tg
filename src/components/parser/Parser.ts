@@ -35,7 +35,7 @@ import {
   LIST_VALUE_OPTIONAL_PATTERN, 
 } from '../../patterns';
 
-import { scalarTypeMap } from '../../constants';
+import { SCALAR_TYPE_MAP } from '../../constants';
 
 import { Tokenizer } from '../tokenizer/Tokenizer';
 
@@ -62,7 +62,7 @@ class Parser implements GQLschemaParser {
   private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
     const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
     const nonScalarTypeDefinitions = this.tokenizer.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
-    const typeMap = {...scalarTypeMap};
+    const typeMap = {...SCALAR_TYPE_MAP};
     nonScalarTypeDefinitions.forEach( typeDefinition => {
       const typeDefTuple = typeDefinition.split(/::/);
       const nonScalarTypeName = typeDefTuple[0];
