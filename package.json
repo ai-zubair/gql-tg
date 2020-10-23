@@ -13,7 +13,13 @@
     "start:exec": "nodemon -e js,graphql ./build/index.js",
     "start": "concurrently npm:start:*"
   },
-  "keywords": ["graphql","typescript","type definitions","nodejs","cli"],
+  "keywords": [
+    "graphql",
+    "typescript",
+    "type definitions",
+    "nodejs",
+    "cli"
+  ],
   "repository": "https://github.com/ai-zubair/gql-tg",
   "homepage": "https://github.com/ai-zubair/gql-tg#readme",
   "author": "Zubair Bashir",
