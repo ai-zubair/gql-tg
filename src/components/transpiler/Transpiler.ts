@@ -1,5 +1,6 @@
 import { writeFileSync } from "fs";
 import { performance } from 'perf_hooks';
+import { resolve } from 'path';
 import {
   ExecRequestArg,
   GenericField,
@@ -37,10 +38,12 @@ class Transpiler {
   private transpiledSchema: string = INTRO_TEXT;
   public schemaParser: GQLschemaParser;
   private transpiledDefinitions = 0;
+  public definitionsPath: string;
 
-  constructor(schemaURL: string, customParser?:GQLschemaParser) {
-    this.schemaParser = customParser || new Parser(schemaURL);
+  constructor(schemaPath: string = './schema.graphql', definitionsPath: string = './definitions.ts', customParser?:GQLschemaParser) {
+    this.schemaParser = customParser || new Parser(schemaPath);
     this.parsedSchema = this.schemaParser.parsedSchema;
+    this.definitionsPath = resolve(process.cwd(),definitionsPath);
   }
 
   public transpileSchema(){
@@ -57,8 +60,8 @@ class Transpiler {
       this.writeToTranspiledSchema(transpiledNonScalar);
     }
     const defWritingEnd = performance.now();
-    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written in ${(defWritingEnd-defWritingStart).toFixed(2)}ms\n`);
-    writeFileSync('./definitions.ts',this.transpiledSchema);
+    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written to ${this.definitionsPath} in ${(defWritingEnd-defWritingStart).toFixed(2)}ms\n`);
+    writeFileSync(this.definitionsPath,this.transpiledSchema);
   }
 
   private writeToTranspiledSchema(transpiledDefinition: string){

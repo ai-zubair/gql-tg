@@ -10,6 +10,7 @@ import {
 } from '../../patterns';
 import { DELIM } from '../../constants';
 import { GQLschemaTokenizer } from '../parser/Parser';
+import { resolve } from 'path';
 
 class Tokenizer implements GQLschemaTokenizer{
 
@@ -17,19 +18,21 @@ class Tokenizer implements GQLschemaTokenizer{
   public typeDefinitions: TokenizedTypeDefinition[] = [];
   public rootOperationDefinitions: TokenizedTypeDefinition[] = [];
   public nonScalarTypeDefinitions: TokenizedTypeDefinition[] = [];
+  public schemaPath: string;
   
-  constructor(public schemaURL: string) {
+  constructor(schemaPath: string) {
+    this.schemaPath = resolve(process.cwd(),schemaPath);
     this.typeDefinitions = this.tokenizeTypeDefinitions();
     this.rootOperationDefinitions = this.getTokenizedRootOperationDefinitions();
     this.nonScalarTypeDefinitions = this.getNonScalarTypeDefinitions();
   }
 
   private tokenizeTypeDefinitions(): TokenizedTypeDefinition[]{
-    if(!this.schemaURL.endsWith('.graphql')){
+    if(!this.schemaPath.endsWith('.graphql')){
       throw new Error("Schema file must be a graphql file!");
     }
     try{
-      const schemaFileData = readFileSync(this.schemaURL,{
+      const schemaFileData = readFileSync(this.schemaPath,{
         encoding: "utf-8"
       })
       const defGenPattern = new RegExp(DEF_GEN_PATTERN,'i');

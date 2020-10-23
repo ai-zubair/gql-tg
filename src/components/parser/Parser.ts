@@ -52,8 +52,8 @@ class Parser implements GQLschemaParser {
   private namedTypeMap: GQLNamedTypeMap = {};
   public parsedSchema: GQLschemaMap;
 
-  constructor(public schemaURL: string, customTokenizer?: GQLschemaTokenizer) {
-    this.tokenizer = customTokenizer || new Tokenizer(schemaURL);
+  constructor(public schemaPath: string, customTokenizer?: GQLschemaTokenizer) {
+    this.tokenizer = customTokenizer || new Tokenizer(schemaPath);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
     this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
     this.parsedSchema = this.parseSchema();
