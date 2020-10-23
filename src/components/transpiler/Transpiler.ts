@@ -1,4 +1,5 @@
 import { writeFileSync } from "fs";
+import { performance } from 'perf_hooks';
 import {
   ExecRequestArg,
   GenericField,
@@ -35,6 +36,7 @@ class Transpiler {
   private parsedSchema: GQLschemaMap;
   private transpiledSchema: string = INTRO_TEXT;
   public schemaParser: GQLschemaParser;
+  private transpiledDefinitions = 0;
 
   constructor(schemaURL: string, customParser?:GQLschemaParser) {
     this.schemaParser = customParser || new Parser(schemaURL);
@@ -42,6 +44,7 @@ class Transpiler {
   }
 
   public transpileSchema(){
+    const defWritingStart = performance.now();
     for (const rootOperationName in this.parsedSchema.rootOperations) {
       const rootOperation = this.parsedSchema.rootOperations[rootOperationName];
       rootOperation.permittedRequests.forEach((executionRequest: GQLExecutionRequest)=>{
@@ -53,11 +56,14 @@ class Transpiler {
       const transpiledNonScalar = this.transpileParsedNonScalar(nonScalarTypeName);
       this.writeToTranspiledSchema(transpiledNonScalar);
     }
+    const defWritingEnd = performance.now();
+    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written in ${(defWritingEnd-defWritingStart).toFixed(2)}ms\n`);
     writeFileSync('./definitions.ts',this.transpiledSchema);
   }
 
   private writeToTranspiledSchema(transpiledDefinition: string){
     if(transpiledDefinition){
+      this.transpiledDefinitions++;
       this.transpiledSchema = this.transpiledSchema.concat(transpiledDefinition);
     }
   }
