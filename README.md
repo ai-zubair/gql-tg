@@ -1,3 +1,9 @@
+## CHANGELOG 1.1.0
+- Added support for custom schema file path/name.
+- Added support for custom definitions file path/name.
+- Fixed the schema file reading issue.
+- Added default schema file path and definitions file path.
+
 ## Why?
 Type defintions are awesome. Which is why we love Typescript. Our love for **GraphQL** is endless for the ease and scalability it brings to our application servers. Here's the pain though:  
 
@@ -6,9 +12,14 @@ Type defintions are awesome. Which is why we love Typescript. Our love for **Gra
 Ta-Da! Wait no more! **gql-tg** brings static typings into your typescript resolvers for the Graph QL operations.
 
 ## How?
-**gql-tg** reads the graphql schema file located in the command's execution directory(pwd) and recursively goes through all the GraphQL operations found in the schema file, generating the corresponding type definitions both for the operations' resolver arguments as well as the return value. 
+**gql-tg** reads the specified graphql schema file, going through all the root operations and non scalar types found in the schema file and generates the TypeScript type definitions for the GraphQL:
+- Operations' Arguments
+- Operations' Non scalar return values
+- Non scalar types [ *Input Type*, *Object Type*, *Union Type*, *Interface Type*, *Enum Type* ]
 
-***NOTE: types in the schema.graphql file that do not appear in any of the GQL operations, neither as an operation argument nor as the return type are not written ot the output file.***
+for use in the corresponding resolvers meant for the operations.
+
+*NOTE: Suppport for GraphQL fragments comming soon!*
 
 ## CLI
 To get the CLI:
@@ -17,21 +28,33 @@ To get the CLI:
 npm i --save-dev gql-tg
 ```
 
-The installed CLI exposes the **typegen** command which generates the type definitions by synchronously writing to a file located in command's execution directory(pwd). As of now, in the current version no CLI options are supported. 
+The installed CLI exposes the **typegen** command which generates the type definitions by synchronously writing to the specified definitions file. 
 
-**Workflow:**
-1. Create the graphql schema file exactly with the name ***schema.graphql***.
-2. Navigate to the project directory containing the schema file.
-3. Execute the command.
-4. Type definition file  ***definitions.ts*** is written to the same directory.
+##### OPTIONS
+The CLI supports two options as of now:
+- Input schema file path/name. *(Defaults to **'schema.graphql'** file in the **PWD**)*
+- Output definitions file path/name. *(Defaults to **'definitions.ts'** file in the **PWD**)*
 
-e.g. If the **schema.grpahql** file is located in the project root, to get the type definitions generated in the same directory: 
-
+Since, the CLI options are processed via the Node's native **PROCESS***(process.argv)* object, they must be specified as plain-text strings without any verbose option prefixes, exactly in the order:
 ```
-~/path/to/project-root$ typegen
+$ typegen   path/to/schema/file.graphql   path/to/type/definitions/file.ts
 ```
+*NOTE: The specified paths are processed relative to the current working directory.*
 
-***NOTE: Support for custom input schema file path, output type definitions file path and output definitions file name is coming soon!***
+e.g.
+For the following project structure: 
+```
+|-src
+    |-schema.graphql
+    |-js/
+    |-types/
+|-package.json
+|-.gitignore
+```
+To generate the type definitions into the **/src/js/**, executing the command from the **project root**:
+```
+~/path/to/project-root$ typegen ./src/schema.graphql ./src/js/gqlTypeDefinitions.ts
+```
 
 ## Contribute
 
