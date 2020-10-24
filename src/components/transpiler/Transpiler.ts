@@ -44,6 +44,9 @@ class Transpiler {
     this.schemaParser = customParser || new Parser(schemaPath);
     this.parsedSchema = this.schemaParser.parsedSchema;
     this.definitionsPath = resolve(process.cwd(),definitionsPath);
+    if(!this.definitionsPath.endsWith('.ts')){
+      throw new Error("Output file must be a TS file.");
+    }
   }
 
   public transpileSchema(){
@@ -60,8 +63,13 @@ class Transpiler {
       this.writeToTranspiledSchema(transpiledNonScalar);
     }
     const defWritingEnd = performance.now();
-    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written to ${this.definitionsPath} in ${(defWritingEnd-defWritingStart).toFixed(2)}ms\n`);
-    writeFileSync(this.definitionsPath,this.transpiledSchema);
+    const timeTakenToWriteDefinitions = defWritingEnd - defWritingStart;
+    try{
+      writeFileSync(this.definitionsPath,this.transpiledSchema);
+    }catch(err){
+      throw new Error("Invalid Output File Path!");
+    }
+    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written to ${this.definitionsPath} in ${(timeTakenToWriteDefinitions).toFixed(2)}ms\n`);
   }
 
   private writeToTranspiledSchema(transpiledDefinition: string){

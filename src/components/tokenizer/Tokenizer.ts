@@ -47,7 +47,7 @@ class Tokenizer implements GQLschemaTokenizer{
                                                                               .replace(terminalDelimPattern,''));
       return cleanedDefinitionList;
     }catch(err){
-      throw new Error("Failed to generate type definition strings!");
+      throw new Error("Failed to read the input schema file!");
     }
   }
 
