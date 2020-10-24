@@ -1,13 +1,17 @@
-.vscode
+*.d.ts
 
-node_modules
-
-definitions.ts
-
-mockup.schema.graphql
-
-parsedSchema.json
+*.js.map
 
 src/
 
-build/types/
+node_modules/
+
+.vscode/
+
+definitions.ts
+
+package-lock.json
+
+parsedSchema.json
+
+*.graphql
