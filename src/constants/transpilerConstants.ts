@@ -29,6 +29,12 @@ export const INTRO_TEXT =
 * Change the source GraphQL Schema File instead.
 */`;
 
+export const DEFAULT_SCHEMA_PATH = "./schema.graphql";
+
+export const DEFAULT_DEFINITIONS_PATH = "./definitions.ts";
+
+export const DEF_FILE_EXTENSION = '.ts';
+
 export const ARG_SUFFIX = "ARGS";
 
 export const LIST_SUFFIX = "[]";
@@ -40,3 +46,7 @@ export const EXPORT = 'export';
 export const NEW_LINE = '\n';
 
 export const UNION_BAR = '|';
+
+export const INCORRECT_OUTPUT_FILE_NAME_ERROR = "Output file must be a TS file!";
+
+export const INCORRECT_OUTPUT_FILE_PATH_ERROR = "Invalid Output File Path!";

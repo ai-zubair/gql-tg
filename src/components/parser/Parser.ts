@@ -25,7 +25,6 @@ import {
 
 import { 
   EMPTY_STRING_PATTERN, 
-  ROOT_OP_PATTERN,
   ER_SPLIT_PATTERN, 
   SIGNATURE_SPLIT_PATTERN, 
   ARG_SPLIT_PATTERN, 
@@ -35,7 +34,7 @@ import {
   LIST_VALUE_OPTIONAL_PATTERN, 
 } from '../../patterns';
 
-import { SCALAR_TYPE_MAP } from '../../constants';
+import { FIELD_SEPARATOR, LIST_WRAPPING_TYPE, NO_TYPE_DEFINITIONS_FOUND_ERROR, SCALAR_TYPE_MAP } from '../../constants';
 
 import { Tokenizer } from '../tokenizer/Tokenizer';
 
@@ -52,19 +51,17 @@ class Parser implements GQLschemaParser {
   private namedTypeMap: GQLNamedTypeMap = {};
   public parsedSchema: GQLschemaMap;
 
-  constructor(public schemaURL: string, customTokenizer?: GQLschemaTokenizer) {
-    this.tokenizer = customTokenizer || new Tokenizer(schemaURL);
+  constructor(public schemaPath: string, customTokenizer?: GQLschemaTokenizer) {
+    this.tokenizer = customTokenizer || new Tokenizer(schemaPath);
     this.rootOperationDefTupleMap = this.generateRootOperationDefTuples();
     this.namedTypeMap = this.mapTypeLabelsToNamedTypes();
     this.parsedSchema = this.parseSchema();
   }
 
   private mapTypeLabelsToNamedTypes(): GQLNamedTypeMap{
-    const rootOpPattern = new RegExp(ROOT_OP_PATTERN, 'i');
-    const nonScalarTypeDefinitions = this.tokenizer.typeDefinitions.filter( typeDefinition => !rootOpPattern.test(typeDefinition));
     const typeMap = {...SCALAR_TYPE_MAP};
-    nonScalarTypeDefinitions.forEach( typeDefinition => {
-      const typeDefTuple = typeDefinition.split(/::/);
+    this.tokenizer.nonScalarTypeDefinitions.forEach( typeDefinition => {
+      const typeDefTuple = typeDefinition.split(this.tokenizer.parsingDelimiter);
       const nonScalarTypeName = typeDefTuple[0];
       const nonScalarTypeLabel = typeDefTuple[1];
       typeMap[nonScalarTypeLabel] = nonScalarTypeName.toUpperCase();
@@ -73,9 +70,6 @@ class Parser implements GQLschemaParser {
   }
 
   private generateRootOperationDefTuples(): GQLRootOperationTupleMap {
-    if(this.tokenizer.rootOperationDefinitions.length === 0){
-      throw new Error("No root operation type defintions found in the schema file!"); 
-    }
     const defTupleMap: GQLRootOperationTupleMap = {
       [ROOT_OP_NAMES.QUERY]: undefined,
       [ROOT_OP_NAMES.MUTATION]: undefined,
@@ -95,7 +89,7 @@ class Parser implements GQLschemaParser {
     const argName = argTuple[0];
     const argTypeSignature = argTuple[1];
     const isOptional = !new RegExp(REQUIRED_ARG_PATTERN).test(argTypeSignature);
-    const argDefWithoutWrapgType = argTypeSignature.replace('!','');
+    const argDefWithoutWrapgType = argTypeSignature.replace(LIST_WRAPPING_TYPE,'');
     const argType = this.namedTypeMap[argDefWithoutWrapgType] as GQL_INPUT_TYPES;
     const scalarTypeName = argType === GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType: undefined;
     const nonScalarTypeName = argType !== GQL_INPUT_TYPES.SCALAR ? argDefWithoutWrapgType : undefined;
@@ -184,7 +178,7 @@ class Parser implements GQLschemaParser {
       const typeFields = nonScalarTypeDefTuple.length > 2 ? [] as NonScalarTypeField[] : undefined;
       for (let typeFieldIndex = 2; typeFieldIndex < nonScalarTypeDefTuple.length; typeFieldIndex++) {
         const isEnumOrUnionType = nativeType === GQL_NAMED_TYPES.ENUM || nativeType === GQL_NAMED_TYPES.UNION;
-        const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(':');
+        const fieldTuple = nonScalarTypeDefTuple[typeFieldIndex].split(FIELD_SEPARATOR);
         const fieldLabel = fieldTuple[0];
         const fieldReturn = isEnumOrUnionType ? undefined : this.parseReturnDefinition(fieldTuple[1]) as GenericFieldType;
         typeFields.push({
@@ -202,6 +196,9 @@ class Parser implements GQLschemaParser {
   }
 
   private parseSchema(): GQLschemaMap {
+    if(this.tokenizer.rootOperationDefinitions.length === 0 && this.tokenizer.nonScalarTypeDefinitions.length === 0){
+      throw new Error(NO_TYPE_DEFINITIONS_FOUND_ERROR);
+    }
     const rootOperations = this.parseRootOperations();
     const nonScalarTypes = this.parseNonScalarTypeDefinitions();
     return{
