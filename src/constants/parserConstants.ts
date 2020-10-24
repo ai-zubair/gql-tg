@@ -7,3 +7,9 @@ export const SCALAR_TYPE_MAP = {
   "Float": GQL_NAMED_TYPES.SCALAR, 
   "Boolean": GQL_NAMED_TYPES.SCALAR, 
 }
+
+export const FIELD_SEPARATOR = ':';
+
+export const LIST_WRAPPING_TYPE = "!";
+
+export const NO_TYPE_DEFINITIONS_FOUND_ERROR = "No type defintions found in the schema file!";

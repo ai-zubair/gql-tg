@@ -8,7 +8,13 @@ import {
   STX_CHARAC_PATTERN,
   TERMINAL_DELIM_PATTERN
 } from '../../patterns';
-import { DELIM } from '../../constants';
+import {
+  DELIM,
+  INCORRECT_SCHEMA_FILE_NAME_ERROR,
+  INCORRECT_SCHEMA_FILE_PATH_ERROR,
+  OUTPUT_STRING_ENCODING,
+  SCHEMA_FILE_EXTENSION 
+} from '../../constants';
 import { GQLschemaTokenizer } from '../parser/Parser';
 import { resolve } from 'path';
 
@@ -28,12 +34,12 @@ class Tokenizer implements GQLschemaTokenizer{
   }
 
   private tokenizeTypeDefinitions(): TokenizedTypeDefinition[]{
-    if(!this.schemaPath.endsWith('.graphql')){
-      throw new Error("Schema file must be a graphql file!");
+    if(!this.schemaPath.endsWith(SCHEMA_FILE_EXTENSION)){
+      throw new Error(INCORRECT_SCHEMA_FILE_NAME_ERROR);
     }
     try{
       const schemaFileData = readFileSync(this.schemaPath,{
-        encoding: "utf-8"
+        encoding: OUTPUT_STRING_ENCODING
       })
       const defGenPattern = new RegExp(DEF_GEN_PATTERN,'i');
       const typeDefinitionList = schemaFileData.split(defGenPattern);
@@ -47,7 +53,7 @@ class Tokenizer implements GQLschemaTokenizer{
                                                                               .replace(terminalDelimPattern,''));
       return cleanedDefinitionList;
     }catch(err){
-      throw new Error("Failed to read the input schema file!");
+      throw new Error(INCORRECT_SCHEMA_FILE_PATH_ERROR);
     }
   }
 
