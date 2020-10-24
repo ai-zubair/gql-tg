@@ -1,17 +1,11 @@
+*
+
+!build/*
+
+!build/**/*
+
+!build/**/**/*
+
 *.d.ts
 
 *.js.map
-
-src/
-
-node_modules/
-
-.vscode/
-
-definitions.ts
-
-package-lock.json
-
-parsedSchema.json
-
-*.graphql
