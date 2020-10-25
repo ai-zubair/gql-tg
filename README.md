@@ -29,8 +29,8 @@ The type generator is internally based on **three high level components** as per
 
 ## CLI
 The CLI can be installed both:
--Locally   `npm i --save-dev gql-tg`
--Globally  `npm i -g gql-tg` 
+- Locally   `npm i --save-dev gql-tg`
+- Globally  `npm i -g gql-tg` 
 
 The installed CLI exposes the **typegen** command which generates the type definitions by synchronously writing to the specified definitions file. 
 
