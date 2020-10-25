@@ -12,4 +12,4 @@ export const FIELD_SEPARATOR = ':';
 
 export const LIST_WRAPPING_TYPE = "!";
 
-export const NO_TYPE_DEFINITIONS_FOUND_ERROR = "No type defintions found in the schema file!";
+export const NO_TYPE_DEFINITIONS_FOUND_ERROR = "\x1b[31m[Error]: No type defintions found in the schema file!\x1b[37m";

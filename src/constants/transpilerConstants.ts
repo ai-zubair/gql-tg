@@ -47,6 +47,6 @@ export const NEW_LINE = '\n';
 
 export const UNION_BAR = '|';
 
-export const INCORRECT_OUTPUT_FILE_NAME_ERROR = "Output file must be a TS file!";
+export const INCORRECT_OUTPUT_FILE_NAME_ERROR = "\x1b[31m[Error]: Output file must be a TS file!\x1b[37m";
 
-export const INCORRECT_OUTPUT_FILE_PATH_ERROR = "Invalid Output File Path!";
+export const INCORRECT_OUTPUT_FILE_PATH_ERROR = "\x1b[31m[Error]: Invalid Output File Path!\x1b[37m";

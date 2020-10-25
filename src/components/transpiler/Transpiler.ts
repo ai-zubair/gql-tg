@@ -77,7 +77,7 @@ class Transpiler {
     }catch(err){
       throw new Error(INCORRECT_OUTPUT_FILE_PATH_ERROR);
     }
-    process.stdout.write(`[SUCCESS]: ${this.transpiledDefinitions} definitions written to ${this.definitionsPath} in ${(timeTakenToWriteDefinitions).toFixed(2)}ms\n`);
+    process.stdout.write(`\x1b[32m[Success]: ${this.transpiledDefinitions} definitions written to ${this.definitionsPath} in ${(timeTakenToWriteDefinitions).toFixed(2)}ms\n\x1b[37m`);
   }
 
   private writeToTranspiledSchema(transpiledDefinition: string){
