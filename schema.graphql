@@ -105,3 +105,5 @@ type PostSubscriptionPayload{
   mutation: MutationType!
   data: Post!
 }
+
+union Test = CommentSubscriptionPayload | PostSubscriptionPayload
