@@ -22,7 +22,7 @@ Ta-Da! Wait no more! **gql-tg** brings static typings into your TypeScript resol
 
 for use in the corresponding resolvers meant for the operations. 
 The type generator is internally based on **three high level components** as per the specified design:
- [![design](https://raw.githubusercontent.com/ai-zubair/gql-tg/master/process.png)](https://raw.githubusercontent.com/ai-zubair/gql-tg/master/design.png)
+ [![design](https://raw.githubusercontent.com/ai-zubair/gql-tg/master/process.png)](https://raw.githubusercontent.com/ai-zubair/gql-tg/master/process.png)
 - **Tokenizer**: Reads the GraphQL definitions and identifies the constituent tokens.
 - **Parser**: Parses Tokenized Definitions into JS objects.
 - **Transpiler**: Writes the TS type definition from the parsed JS objects.
