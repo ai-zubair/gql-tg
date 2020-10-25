@@ -1,7 +1,7 @@
 # GQL-TG [![NPM](https://nodei.co/npm/gql-tg.png?mini=true)](https://nodei.co/npm/gql-tg/)  [![npm version](https://badge.fury.io/js/gql-tg.svg)](https://badge.fury.io/js/gql-tg) [![HitCount](http://hits.dwyl.com/ai-zubair/gql-tg.svg)](http://hits.dwyl.com/ai-zubair/gql-tg) [![dependencies](https://david-dm.org/ai-zubair/gql-tg.svg)](https://david-dm.org/ai-zubair/gql-tg.svg) [![issues](https://img.shields.io/github/issues/ai-zubair/gql-tg)](https://img.shields.io/github/issues/ai-zubair/gql-tg)
 An automatic TS type definitions generator for GraphQL operations' resolvers.
 
-## ChangeLog [![changelog](https://img.shields.io/badge/Version-1.1.0-brightgreen)](https://img.shields.io/badge/Version-1.1.0-brightgreen)
+## ChangeLog [![changelog](https://img.shields.io/badge/Version-1.1.1-brightgreen)](https://img.shields.io/badge/Version-1.1.0-brightgreen)
 - Fixed the schema file reading issue.
 - Added support for custom schema file path/name.
 - Added support for custom definitions file path/name.

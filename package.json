@@ -1,6 +1,6 @@
 {
   "name": "gql-tg",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Automatically generate TS type definitions for the GQL resolvers.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
