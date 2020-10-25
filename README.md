@@ -1,4 +1,9 @@
-## CHANGELOG 1.1.0
+# GQL-TG 
+Automatic type definitions generator for GraphQL operations' resolvers.
+
+[![NPM](https://nodei.co/npm/gql-tg.png?mini=true)](https://nodei.co/npm/gql-tg/)  [![npm version](https://badge.fury.io/js/gql-tg.svg)](https://badge.fury.io/js/gql-tg) [![HitCount](http://hits.dwyl.com/ai-zubair/gql-tg.svg)](http://hits.dwyl.com/ai-zubair/gql-tg) [![dependencies](https://david-dm.org/ai-zubair/gql-tg.svg)](https://david-dm.org/ai-zubair/gql-tg.svg) [![issues](https://img.shields.io/github/issues/ai-zubair/gql-tg)](https://img.shields.io/github/issues/ai-zubair/gql-tg)
+
+## CHANGELOG 1.1.0 [![changelog](https://img.shields.io/badge/ChangeLog-1.1.0-brightgreen)](https://img.shields.io/badge/ChangeLog-1.1.0-brightgreen)
 - Added support for custom schema file path/name.
 - Added support for custom definitions file path/name.
 - Fixed the schema file reading issue.
@@ -56,7 +61,7 @@ To generate the type definitions into the **/src/js/**, executing the command fr
 ~/path/to/project-root$ typegen ./src/schema.graphql ./src/js/gqlTypeDefinitions.ts
 ```
 
-## Contribute
+## Contribute [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
 
 To get started:
 1. Clone the repo onto your local machine. `git clone https://github.com/ai-zubair/gql-tg.git`
